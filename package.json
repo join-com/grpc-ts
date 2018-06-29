@@ -6,14 +6,15 @@
   "types": "./lib/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "makepretty": "prettier --write '**/*.ts'",
+    "makepretty": "prettier --write -l '**/*.ts'",
     "lint": "yarn tslint -p .",
     "test": "jest",
     "test:watch": "yarn test --watch",
     "proto:generate": "protoc __tests__/proto/**/*.proto -I __tests__/proto --ts_out=proto_relative=../proto:/$PWD/__tests__/generated",
     "proto:replace_imports": "sed -i '' 's=grpc-ts=../../../src/index=g' __tests__/generated/**/*.ts",
     "proto:make": "yarn proto:generate && yarn proto:replace_imports",
-    "prepublish": "yarn build"
+    "prepublish": "yarn build",
+    "precommit": "lint-staged"
   },
   "publishConfig": {
     "access": "public"
@@ -58,9 +59,11 @@
       "/generated/"
     ]
   },
+  "lint-staged": {
+    "*.{js,ts,md}": ["prettier --write", "git add"]
+  },
   "devDependencies": {
     "@types/jest": "^23.1.1",
-    "git-hooks": "^1.1.10",
     "jest": "^23.1.0",
     "jest-cli": "^23.1.0",
     "jest-watch-typeahead": "^0.1.0",
@@ -75,6 +78,8 @@
     "@join-com/protobufjs-wrappers": "^6.8.7",
     "@types/lodash": "^4.14.110",
     "grpc": "^1.13.0-pre1",
+    "husky": "^0.14.3",
+    "lint-staged": "^7.2.0",
     "lodash": "^4.17.10"
   }
 }
