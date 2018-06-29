@@ -60,7 +60,8 @@
     ]
   },
   "lint-staged": {
-    "*.{js,ts,md}": ["prettier --write", "git add"]
+    "*.{js,ts,md}": ["yarn prettier --write", "git add"],
+    "*.ts": ["yarn tsc --noEmit", "yarn lint", "git add"]
   },
   "devDependencies": {
     "@types/jest": "^23.1.1",
