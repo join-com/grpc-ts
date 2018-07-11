@@ -51,7 +51,10 @@ export class Client {
     credentials: grpc.ChannelCredentials,
   ) {
     const packageDefinition = loadService(protoPath, includeDirs);
-    const Service = packageDefinition[packageName][serviceName];
+    const definition = packageName
+      .split('.')
+      .reduce((acc, val) => acc[val], packageDefinition);
+    const Service = definition[serviceName];
     this.client = new Service(host, credentials);
   }
 

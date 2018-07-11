@@ -1,35 +1,38 @@
 import * as grpc from 'grpc';
 import { Server } from '../src/Server';
-import { Foo } from './generated/foo/Foo';
+import { FooTest } from './generated/foo/Foo';
 
-const foo = async (req: Foo.FooRequest): Promise<string> => {
+const foo = async (req: FooTest.FooRequest): Promise<string> => {
   return `foo result: ${req.id} ${req.name}`;
 };
 
 const fooServerStream = (
-  req: Foo.FooRequest,
-  stream: grpc.ServerWriteableStream<Foo.StreamBarResponse>,
+  req: FooTest.FooRequest,
+  stream: grpc.ServerWriteableStream<FooTest.StreamBarResponse>,
 ): void => {
   stream.write({ result: req.name });
   stream.end();
 };
 
 const fooClientStream = async (
-  req: grpc.ServerReadableStream<Foo.FooRequest>,
+  req: grpc.ServerReadableStream<FooTest.FooRequest>,
 ): Promise<string> => {
   let result = '';
   for await (const reqRaw of req as any) {
-    const request: Foo.FooRequest = reqRaw;
+    const request: FooTest.FooRequest = reqRaw;
     result += request.id;
   }
   return `fooClientStream -> ${result}`;
 };
 
 const fooBieStream = async (
-  duplexStream: grpc.ServerDuplexStream<Foo.FooRequest, Foo.StreamBarResponse>,
+  duplexStream: grpc.ServerDuplexStream<
+    FooTest.FooRequest,
+    FooTest.StreamBarResponse
+  >,
 ): Promise<void> => {
   for await (const reqRaw of duplexStream as any) {
-    const req: Foo.FooRequest = reqRaw;
+    const req: FooTest.FooRequest = reqRaw;
     duplexStream.write({ result: req.name });
   }
   duplexStream.end();
@@ -38,9 +41,9 @@ const fooBieStream = async (
 
 describe('grpc test', () => {
   let server: Server;
-  let client: Foo.TestSvcClient;
+  let client: FooTest.TestSvcClient;
   beforeAll(async () => {
-    const service = new Foo.TestSvcService({
+    const service = new FooTest.TestSvcService({
       foo,
       fooServerStream,
       fooClientStream,
@@ -49,7 +52,7 @@ describe('grpc test', () => {
     server = new Server(grpc.ServerCredentials.createInsecure());
     server.addService(service);
     await server.start('0.0.0.0:0');
-    client = new Foo.TestSvcClient(
+    client = new FooTest.TestSvcClient(
       `0.0.0.0:${server.port}`,
       grpc.credentials.createInsecure(),
     );
@@ -96,7 +99,7 @@ describe('grpc test', () => {
     stream.end();
     const results: any[] = [];
     for await (const reqRaw of stream as any) {
-      const request: Foo.StreamBarResponse = reqRaw;
+      const request: FooTest.StreamBarResponse = reqRaw;
       results.push(request);
     }
     expect(results).toEqual([{ result: 'aaa' }, { result: 'bbb' }]);

@@ -5,7 +5,7 @@ import * as grpc from 'grpc';
 import * as grpcTs from '../../../src/index';
 import * as path from 'path';
 
-export namespace Foo {
+export namespace FooTest {
   export interface FieldError {
     field: string;
     message: string;
@@ -15,7 +15,7 @@ export namespace Foo {
   export interface Error {
     code: number;
     message: string;
-    fieldErrors?: Foo.FieldError[];
+    fieldErrors?: FooTest.FieldError[];
   }
 
   export interface FooRequest {
@@ -31,23 +31,23 @@ export namespace Foo {
   }
 
   export interface BarResponse {
-    error?: Foo.Error;
+    error?: FooTest.Error;
     result: string;
   }
 
   export interface TestSvcImplementation {
-    foo(req: Foo.FooRequest): Promise<string>;
+    foo(req: FooTest.FooRequest): Promise<string>;
     fooServerStream(
-      req: Foo.FooRequest,
-      stream: grpc.ServerWriteableStream<Foo.StreamBarResponse>,
+      req: FooTest.FooRequest,
+      stream: grpc.ServerWriteableStream<FooTest.StreamBarResponse>,
     ): void;
     fooClientStream(
-      stream: grpc.ServerReadableStream<Foo.FooRequest>,
+      stream: grpc.ServerReadableStream<FooTest.FooRequest>,
     ): Promise<string>;
     fooBieStream(
       duplexStream: grpc.ServerDuplexStream<
-        Foo.FooRequest,
-        Foo.StreamBarResponse
+        FooTest.FooRequest,
+        FooTest.StreamBarResponse
       >,
     ): void;
   }
@@ -56,7 +56,7 @@ export namespace Foo {
     constructor(implementations: TestSvcImplementation) {
       const protoPath = 'foo/foo.proto';
       const includeDirs = [path.join(__dirname, '..', '..', 'proto')];
-      super(protoPath, includeDirs, 'foo', 'TestSvc', implementations);
+      super(protoPath, includeDirs, 'foo.test', 'TestSvc', implementations);
     }
   }
 
@@ -64,24 +64,24 @@ export namespace Foo {
     constructor(host: string, credentials: grpc.ChannelCredentials) {
       const protoPath = 'foo/foo.proto';
       const includeDirs = [path.join(__dirname, '..', '..', 'proto')];
-      super(protoPath, includeDirs, 'foo', 'TestSvc', host, credentials);
+      super(protoPath, includeDirs, 'foo.test', 'TestSvc', host, credentials);
     }
-    public foo(req: Foo.FooRequest): Promise<string> {
+    public foo(req: FooTest.FooRequest): Promise<string> {
       return super.makeUnaryRequest('foo', req);
     }
     public fooServerStream(
-      req: Foo.FooRequest,
-    ): grpc.ClientReadableStream<Foo.StreamBarResponse> {
+      req: FooTest.FooRequest,
+    ): grpc.ClientReadableStream<FooTest.StreamBarResponse> {
       return super.makeServerStreamRequest('fooServerStream', req);
     }
     public fooClientStream(
-      callback: grpcTs.Callback<Foo.BarResponse>,
-    ): grpc.ClientWritableStream<Foo.FooRequest> {
+      callback: grpcTs.Callback<FooTest.BarResponse>,
+    ): grpc.ClientWritableStream<FooTest.FooRequest> {
       return super.makeClientStreamRequest('fooClientStream', callback);
     }
     public fooBieStream(): grpc.ClientDuplexStream<
-      Foo.FooRequest,
-      Foo.StreamBarResponse
+      FooTest.FooRequest,
+      FooTest.StreamBarResponse
     > {
       return super.makeBidiStreamRequest('fooBieStream');
     }

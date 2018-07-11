@@ -153,8 +153,10 @@ export class Service<T> {
   ) {
     const packageDefinition = loadService(protoPath, includeDirs);
     this.implementations = implementations;
-    this.serviceDefinition =
-      packageDefinition[packageName][serviceName].service;
+    const definition = packageName
+      .split('.')
+      .reduce((acc, val) => acc[val], packageDefinition);
+    this.serviceDefinition = definition[serviceName].service;
   }
 
   public wrappedImplementations(): grpc.UntypedServiceImplementation {
