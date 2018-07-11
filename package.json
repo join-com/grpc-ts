@@ -1,6 +1,6 @@
 {
   "name": "@join-com/grpc-ts",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "grpc typescript wrapper",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
@@ -14,7 +14,7 @@
     "proto:replace_imports": "sed -i '' 's=grpc-ts=../../../src/index=g' __tests__/generated/**/*.ts",
     "proto:make": "yarn proto:generate && yarn proto:replace_imports",
     "prepublish": "yarn build",
-    "precommit": "lint-staged"
+    "precommit": "tsc --noEmit && lint-staged"
   },
   "publishConfig": {
     "access": "public"
@@ -61,7 +61,7 @@
   },
   "lint-staged": {
     "*.{js,ts,md}": ["yarn prettier --write", "git add"],
-    "*.ts": ["yarn tsc --noEmit", "yarn lint", "git add"]
+    "*.ts": ["yarn lint", "git add"]
   },
   "devDependencies": {
     "@types/jest": "^23.1.1",
