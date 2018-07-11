@@ -145,12 +145,13 @@ export class Service<T> {
   private readonly implementations: T;
   constructor(
     protoPath: string,
+    includeDirs: string[],
     packageName: string,
     serviceName: string,
     implementations: T,
     private readonly errorHandler: ErrorHandler = baseErrorHandler,
   ) {
-    const packageDefinition = loadService(protoPath);
+    const packageDefinition = loadService(protoPath, includeDirs);
     this.implementations = implementations;
     this.serviceDefinition =
       packageDefinition[packageName][serviceName].service;

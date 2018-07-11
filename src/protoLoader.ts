@@ -204,11 +204,12 @@ export function loadSync(
   return createPackageDefinition(root, options);
 }
 
-export const loadService = (protoPath: string) => {
+export const loadService = (protoPath: string, includeDirs: string[]) => {
   const packageDefinition = loadSync(protoPath, {
     longs: Number,
     enums: String,
     bytes: String,
+    includeDirs,
   });
   return grpc.loadPackageDefinition(packageDefinition);
 };

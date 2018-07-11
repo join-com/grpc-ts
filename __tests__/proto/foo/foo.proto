@@ -4,7 +4,7 @@ syntax = "proto3";
 package foo;
 
 import "google/protobuf/wrappers.proto";
-import "google/protobuf/empty.proto";
+import "common/common.proto";
 
 service TestSvc {
   rpc Foo(FooRequest) returns (BarResponse) {}
@@ -30,6 +30,7 @@ message FooRequest {
   google.protobuf.StringValue name = 2;
   google.protobuf.StringValue password = 3;
   google.protobuf.StringValue token = 4;
+  common.EmptyMessage empty = 5;
 }
 
 message StreamBarResponse {

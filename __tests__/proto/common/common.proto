@@ -1,0 +1,10 @@
+
+syntax = "proto3";
+
+package foo.common;
+
+import "google/protobuf/empty.proto";
+
+message EmptyMessage {
+  google.protobuf.Empty field = 1;
+}

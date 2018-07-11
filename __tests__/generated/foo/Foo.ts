@@ -1,8 +1,9 @@
 // GENERATED CODE -- DO NOT EDIT!
+import { FooCommon } from '../common/Common';
 
 import * as grpc from 'grpc';
-import * as path from 'path';
 import * as grpcTs from '../../../src/index';
+import * as path from 'path';
 
 export namespace Foo {
   export interface FieldError {
@@ -22,6 +23,7 @@ export namespace Foo {
     name?: string;
     password?: string;
     token?: string;
+    empty?: FooCommon.EmptyMessage;
   }
 
   export interface StreamBarResponse {
@@ -52,29 +54,17 @@ export namespace Foo {
 
   export class TestSvcService extends grpcTs.Service<TestSvcImplementation> {
     constructor(implementations: TestSvcImplementation) {
-      const protoPath = path.join(
-        __dirname,
-        '..',
-        '..',
-        'proto',
-        'foo',
-        'foo.proto',
-      );
-      super(protoPath, 'foo', 'TestSvc', implementations);
+      const protoPath = 'foo/foo.proto';
+      const includeDirs = [path.join(__dirname, '..', '..', 'proto')];
+      super(protoPath, includeDirs, 'foo', 'TestSvc', implementations);
     }
   }
 
   export class TestSvcClient extends grpcTs.Client {
     constructor(host: string, credentials: grpc.ChannelCredentials) {
-      const protoPath = path.join(
-        __dirname,
-        '..',
-        '..',
-        'proto',
-        'foo',
-        'foo.proto',
-      );
-      super(protoPath, 'foo', 'TestSvc', host, credentials);
+      const protoPath = 'foo/foo.proto';
+      const includeDirs = [path.join(__dirname, '..', '..', 'proto')];
+      super(protoPath, includeDirs, 'foo', 'TestSvc', host, credentials);
     }
     public foo(req: Foo.FooRequest): Promise<string> {
       return super.makeUnaryRequest('foo', req);

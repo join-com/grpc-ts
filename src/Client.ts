@@ -44,12 +44,13 @@ export class Client {
 
   constructor(
     protoPath: string,
+    includeDirs: string[],
     packageName: string,
     serviceName: string,
     host: string,
     credentials: grpc.ChannelCredentials,
   ) {
-    const packageDefinition = loadService(protoPath);
+    const packageDefinition = loadService(protoPath, includeDirs);
     const Service = packageDefinition[packageName][serviceName];
     this.client = new Service(host, credentials);
   }

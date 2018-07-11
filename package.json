@@ -11,7 +11,7 @@
     "test": "jest",
     "test:watch": "yarn test --watch",
     "proto:generate": "protoc __tests__/proto/**/*.proto -I __tests__/proto --ts_out=proto_relative=../proto:/$PWD/__tests__/generated",
-    "proto:replace_imports": "sed -i '' 's=grpc-ts=../../../src/index=g' __tests__/generated/**/*.ts",
+    "proto:replace_imports": "sed -i '' 's=@join-com/grpc-ts=../../../src/index=g' __tests__/generated/**/*.ts",
     "proto:make": "yarn proto:generate && yarn proto:replace_imports",
     "prepublish": "yarn build",
     "precommit": "tsc --noEmit && lint-staged"
@@ -61,7 +61,7 @@
   },
   "lint-staged": {
     "*.{js,ts,md}": ["yarn prettier --write", "git add"],
-    "*.ts": ["yarn lint", "git add"]
+    "src/**/*.ts": ["yarn lint --fix", "git add"]
   },
   "devDependencies": {
     "@types/jest": "^23.1.1",
