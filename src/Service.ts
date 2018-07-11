@@ -142,14 +142,16 @@ const wrapImplementation = (
 
 export class Service<T> {
   public readonly serviceDefinition: grpc.ServiceDefinition<any>;
+  private readonly implementations: T;
   constructor(
     protoPath: string,
     packageName: string,
     serviceName: string,
-    private readonly implementations: T,
+    implementations: T,
     private readonly errorHandler: ErrorHandler = baseErrorHandler,
   ) {
     const packageDefinition = loadService(protoPath);
+    this.implementations = implementations;
     this.serviceDefinition =
       packageDefinition[packageName][serviceName].service;
   }
