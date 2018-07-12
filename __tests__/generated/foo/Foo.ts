@@ -53,10 +53,20 @@ export namespace FooTest {
   }
 
   export class TestSvcService extends grpcTs.Service<TestSvcImplementation> {
-    constructor(implementations: TestSvcImplementation) {
+    constructor(
+      implementations: TestSvcImplementation,
+      errorHandler?: grpcTs.ErrorHandler,
+    ) {
       const protoPath = 'foo/foo.proto';
       const includeDirs = [path.join(__dirname, '..', '..', 'proto')];
-      super(protoPath, includeDirs, 'foo.test', 'TestSvc', implementations);
+      super(
+        protoPath,
+        includeDirs,
+        'foo.test',
+        'TestSvc',
+        implementations,
+        errorHandler,
+      );
     }
   }
 
