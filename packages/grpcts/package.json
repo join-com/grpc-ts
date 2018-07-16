@@ -1,0 +1,75 @@
+{
+  "name": "@join-com/grpc-ts",
+  "version": "0.1.6",
+  "description": "grpc typescript wrapper",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "test:watch": "yarn test --watch",
+    "proto:generate": "protoc __tests__/proto/**/*.proto -I __tests__/proto --ts_out=proto_relative=../proto:/$PWD/__tests__/generated",
+    "proto:replace_imports": "sed -i '' 's=@join-com/grpc-ts=../../../src/index=g' __tests__/generated/**/*.ts",
+    "proto:make": "yarn proto:generate && yarn proto:replace_imports",
+    "prepublish": "yarn build"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": "https://github.com/join-com/grpc-ts.git",
+  "author": "JOIN Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=8"
+  },
+  "homepage": "https://github.com/join-com/grpc-ts",
+  "contributors": [
+    "Anton Versal <anton.versal@gmail.com>"
+  ],
+  "keywords": [
+    "grpc",
+    "protobuf",
+    "typescript"
+  ],
+  "files": [
+    "lib/"
+  ],
+  "jest": {
+    "transform": {
+      "^.+\\.tsx?$": "ts-jest"
+    },
+    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "jsx",
+      "json",
+      "node"
+    ],
+    "watchPlugins": [
+      "jest-watch-typeahead/filename",
+      "jest-watch-typeahead/testname"
+    ],
+    "testPathIgnorePatterns": [
+      "/proto/",
+      "/generated/"
+    ]
+  },
+  "devDependencies": {
+    "@types/jest": "^23.1.1",
+    "jest": "^23.1.0",
+    "jest-cli": "^23.1.0",
+    "jest-watch-typeahead": "^0.1.0",
+    "ts-jest": "^22.4.6",
+    "typescript": "^2.9.2"
+  },
+  "dependencies": {
+    "@join-com/gcloud-logger-trace": "^0.1.5",
+    "@join-com/node-trace": "^0.1.5",
+    "@join-com/protobufjs-wrappers": "^6.8.7",
+    "@types/lodash": "^4.14.110",
+    "grpc": "^1.13.0-pre1",
+    "lodash": "^4.17.10"
+  }
+}
