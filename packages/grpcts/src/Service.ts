@@ -142,7 +142,7 @@ const wrapImplementation = (
 
 export class Service<T> {
   public readonly serviceDefinition: grpc.ServiceDefinition<any>;
-  private readonly implementations: T;
+  protected readonly implementations: T;
   private readonly errorHandler: ErrorHandler;
   constructor(
     protoPath: string,

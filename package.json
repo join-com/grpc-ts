@@ -3,7 +3,7 @@
   "build": "tsc",
   "makepretty": "prettier --write -l '**/*.ts'",
   "lint": "yarn tslint -p .",
-  "precommit": "lerna run tsc --noEmit && lint-staged"
+  "precommit": "lerna run tsc:check && lint-staged"
  },
  "lint-staged": {
   "*.{js,ts,md}": [
