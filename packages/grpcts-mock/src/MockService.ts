@@ -5,10 +5,6 @@ import 'jest';
 
 export type MockImplementation<T> = { [P in keyof T]: jest.Mock<T[keyof T]> };
 
-// export interface ServicePlus<T> extends Service<T> {
-//   constructor(implementations: T): ServicePlus<T>;
-// }
-
 interface ServicePlusClass<T> {
   new (implementations: T): Service<T>;
 }
