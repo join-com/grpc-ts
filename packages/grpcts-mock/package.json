@@ -1,7 +1,7 @@
 {
-  "name": "@join-com/grpc-ts",
+  "name": "@join-com/grpc-ts-mock",
   "version": "0.1.7",
-  "description": "grpc typescript wrapper",
+  "description": "grpc mock services",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "scripts": {
@@ -9,9 +9,6 @@
     "tsc:check": "tsc --noEmit",
     "test": "jest",
     "test:watch": "yarn test --watch",
-    "proto:generate": "protoc __tests__/proto/**/*.proto -I __tests__/proto --ts_out=proto_relative=../proto:/$PWD/__tests__/generated",
-    "proto:replace_imports": "sed -i '' 's=@join-com/grpc-ts=../../../src/index=g' __tests__/generated/**/*.ts",
-    "proto:make": "yarn proto:generate && yarn proto:replace_imports",
     "prepublish": "yarn build"
   },
   "publishConfig": {
@@ -30,7 +27,10 @@
   "keywords": [
     "grpc",
     "protobuf",
-    "typescript"
+    "typescript",
+    "mock",
+    "test",
+    "jest"
   ],
   "files": [
     "lib/"
@@ -58,20 +58,16 @@
     ]
   },
   "devDependencies": {
-    "@types/jest": "^23.1.1",
-    "@types/lodash": "^4.14.112",
-    "@types/node": "^10.5.2",
-    "jest": "^23.1.0",
+    "@types/jest": "^23.1.6",
+    "grpc": "^1.13.0",
+    "jest": "^23.4.1",
     "jest-cli": "^23.1.0",
     "jest-watch-typeahead": "^0.1.0",
     "ts-jest": "^22.4.6",
     "typescript": "^2.9.2"
   },
   "dependencies": {
-    "@join-com/gcloud-logger-trace": "^0.1.5",
-    "@join-com/node-trace": "^0.1.5",
-    "@join-com/protobufjs-wrappers": "^6.8.7",
-    "grpc": "^1.13.0-pre1",
-    "lodash": "^4.17.10"
+    "@join-com/grpc-ts": "^0.1.7",
+    "jest-mock": "^23.2.0"
   }
 }
