@@ -148,7 +148,7 @@ export class Service<T> {
     protoPath: string,
     includeDirs: string[],
     packageName: string,
-    serviceName: string,
+    public readonly serviceName: string,
     implementations: T,
     errorHandler: ErrorHandler = baseErrorHandler,
   ) {
