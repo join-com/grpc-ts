@@ -5,17 +5,17 @@ import 'jest';
 
 export type MockImplementation<T> = { [P in keyof T]: jest.Mock<T[keyof T]> };
 
-interface ServicePlusClass<T> {
+interface ServiceClass<T> {
   new (implementations: T): Service<T>;
 }
 
 export class MockService<T extends any> {
   public mocks: MockImplementation<T>;
   private wrappers: grpc.UntypedServiceImplementation = {};
-  private service: Service<T>;
+  public service: Service<T>;
 
   constructor(
-    private readonly serviceClass: ServicePlusClass<T>,
+    private readonly serviceClass: ServiceClass<T>,
     private readonly implementations: T,
   ) {
     const mocks: any = {};
