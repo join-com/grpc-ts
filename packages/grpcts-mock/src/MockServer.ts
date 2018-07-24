@@ -5,7 +5,7 @@ interface Services {
   [key: string]: MockService<any>;
 }
 
-export class MockServer<T extends Services> extends Server {
+export abstract class MockServer<T extends Services> extends Server {
   constructor(public readonly services: T) {
     super(grpc.ServerCredentials.createInsecure());
     Object.keys(services).forEach(key => {

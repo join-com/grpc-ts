@@ -45,9 +45,9 @@
   dependencies:
     "@join-com/gcloud-logger" "^0.1.4"
 
-"@join-com/grpc-ts@^0.1.12":
-  version "0.1.12"
-  resolved "https://registry.npmjs.org/@join-com/grpc-ts/-/grpc-ts-0.1.12.tgz#a74d5b174ec0f71559987368057eb6dfcc636d15"
+"@join-com/grpc-ts@^0.1.14":
+  version "0.1.14"
+  resolved "https://registry.npmjs.org/@join-com/grpc-ts/-/grpc-ts-0.1.14.tgz#d0d813da17fc3914fbe544b0ee43b3bc7f19ea3f"
   dependencies:
     "@join-com/gcloud-logger-trace" "^0.1.5"
     "@join-com/node-trace" "^0.1.5"
