@@ -1,6 +1,6 @@
 {
   "name": "@join-com/grpc-ts-mock",
-  "version": "0.1.17",
+  "version": "0.1.18",
   "description": "grpc mock services",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
