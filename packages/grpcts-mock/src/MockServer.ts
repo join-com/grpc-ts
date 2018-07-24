@@ -1,5 +1,5 @@
 import { Server, grpc } from '@join-com/grpc-ts';
-import { MockService } from './mockService';
+import { MockService } from './MockService';
 
 interface Services {
   [key: string]: MockService<any>;
