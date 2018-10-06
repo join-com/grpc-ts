@@ -3,7 +3,6 @@ syntax = "proto3";
 
 package foo.test;
 
-import "google/protobuf/wrappers.proto";
 import "common/common.proto";
 
 service TestSvc {
@@ -13,23 +12,12 @@ service TestSvc {
   rpc FooBieStream (stream FooRequest) returns (stream StreamBarResponse) {}
 }
 
-message FieldError {
-  string field = 1;
-  string message = 2;
-  string code = 3;
-}
-
-message Error {
-  int32 code = 1;
-  string message = 2;
-  repeated FieldError field_errors = 3;
-}
 
 message FooRequest {
   int32 id = 1;
-  google.protobuf.StringValue name = 2;
-  google.protobuf.StringValue password = 3;
-  google.protobuf.StringValue token = 4;
+  repeated string name = 2;
+  string password = 3;
+  string token = 4;
   common.EmptyMessage empty = 5;
 }
 
@@ -38,6 +26,5 @@ message StreamBarResponse {
 }
 
 message BarResponse {
-  Error error = 1;
   string result = 2;
 }

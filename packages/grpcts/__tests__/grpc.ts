@@ -3,6 +3,7 @@ import { Server } from '../src/Server';
 import { FooTest } from './generated/foo/Foo';
 
 const foo = async (req: FooTest.FooRequest): Promise<string> => {
+  console.log(req.name);
   return `foo result: ${req.id} ${req.name}`;
 };
 
@@ -63,10 +64,10 @@ describe('grpc test', () => {
     await server.tryShutdown();
   });
 
-  it('unary grpc', async () => {
+  fit('unary grpc', async () => {
     const result = await client.foo({
       id: 11,
-      name: 'name',
+      // name: ['name'],
       password: 'saasdas',
       token: 'aaas',
     });
