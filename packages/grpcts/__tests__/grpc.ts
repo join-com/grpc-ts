@@ -9,14 +9,14 @@ const foo = async (req: FooTest.FooRequest): Promise<string> => {
 
 const fooServerStream = (
   req: FooTest.FooRequest,
-  stream: grpc.ServerWriteableStream<FooTest.StreamBarResponse>,
+  stream: grpc.ServerWriteableStream<FooTest.StreamBarResponse>
 ): void => {
   stream.write({ result: req.name });
   stream.end();
 };
 
 const fooClientStream = async (
-  req: grpc.ServerReadableStream<FooTest.FooRequest>,
+  req: grpc.ServerReadableStream<FooTest.FooRequest>
 ): Promise<string> => {
   let result = '';
   for await (const reqRaw of req as any) {
@@ -26,11 +26,11 @@ const fooClientStream = async (
   return `fooClientStream -> ${result}`;
 };
 
-const fooBieStream = async (
+const fooBidiStream = async (
   duplexStream: grpc.ServerDuplexStream<
     FooTest.FooRequest,
     FooTest.StreamBarResponse
-  >,
+  >
 ): Promise<void> => {
   for await (const reqRaw of duplexStream as any) {
     const req: FooTest.FooRequest = reqRaw;
@@ -48,14 +48,14 @@ describe('grpc test', () => {
       foo,
       fooServerStream,
       fooClientStream,
-      fooBieStream,
+      fooBidiStream
     });
     server = new Server(grpc.ServerCredentials.createInsecure());
     server.addService(service);
     await server.start('0.0.0.0:0');
     client = new FooTest.TestSvcClient(
       `0.0.0.0:${server.port}`,
-      grpc.credentials.createInsecure(),
+      grpc.credentials.createInsecure()
     );
   });
 
@@ -69,7 +69,7 @@ describe('grpc test', () => {
       id: 11,
       // name: ['name'],
       password: 'saasdas',
-      token: 'aaas',
+      token: 'aaas'
     });
     expect(result).toEqual('foo result: 11 name');
   });
@@ -94,7 +94,7 @@ describe('grpc test', () => {
   });
 
   it('bie streams grpc', async () => {
-    const stream = client.fooBieStream();
+    const stream = client.fooBidiStream();
     stream.write({ id: 3, name: 'aaa' });
     stream.write({ id: 7, name: 'bbb' });
     stream.end();

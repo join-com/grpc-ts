@@ -9,7 +9,7 @@ service TestSvc {
   rpc Foo(FooRequest) returns (BarResponse) {}
   rpc FooServerStream (FooRequest) returns (stream StreamBarResponse) {}
   rpc FooClientStream (stream FooRequest) returns (BarResponse) {}
-  rpc FooBieStream (stream FooRequest) returns (stream StreamBarResponse) {}
+  rpc FooBidiStream (stream FooRequest) returns (stream StreamBarResponse) {}
 }
 
 

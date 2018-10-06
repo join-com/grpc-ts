@@ -46,7 +46,7 @@ describe('Service', () => {
           foo: fooMock,
           fooServerStream: jest.fn(),
           fooClientStream: jest.fn(),
-          fooBieStream: jest.fn()
+          fooBidiStream: jest.fn()
         });
       });
 
@@ -117,7 +117,7 @@ describe('Service', () => {
           foo: fooMock,
           fooServerStream: jest.fn(),
           fooClientStream: jest.fn(),
-          fooBieStream: jest.fn()
+          fooBidiStream: jest.fn()
         });
       });
 
@@ -171,7 +171,7 @@ describe('Service', () => {
           foo: jest.fn(),
           fooServerStream: jest.fn(),
           fooClientStream: fooClientStreamMock,
-          fooBieStream: jest.fn()
+          fooBidiStream: jest.fn()
         });
       });
 
@@ -236,7 +236,7 @@ describe('Service', () => {
           foo: fooMock,
           fooServerStream: jest.fn(),
           fooClientStream: jest.fn(),
-          fooBieStream: jest.fn()
+          fooBidiStream: jest.fn()
         });
       });
 
@@ -285,7 +285,7 @@ describe('Service', () => {
         foo: jest.fn(),
         fooServerStream: fooServerStreamMock,
         fooClientStream: jest.fn(),
-        fooBieStream: jest.fn()
+        fooBidiStream: jest.fn()
       });
     });
 
@@ -300,6 +300,39 @@ describe('Service', () => {
       });
       stream.on('data', (data: FooTest.BarResponse) => {
         expect(data.result).toEqual('Foo stream');
+      });
+      stream.on('end', done);
+    });
+  });
+
+  describe('bidi stream call', () => {
+    const fooServerStreamMock = jest.fn(async call => {
+      for await (const reqRaw of call as any) {
+        const req: FooTest.FooRequest = reqRaw;
+        call.write({ result: req.name![0] });
+      }
+      call.end();
+    });
+
+    beforeAll(() => {
+      startService({
+        foo: jest.fn(),
+        fooServerStream: jest.fn(),
+        fooClientStream: jest.fn(),
+        fooBidiStream: fooServerStreamMock
+      });
+    });
+
+    beforeEach(() => {
+      fooServerStreamMock.mockClear();
+    });
+
+    it('calls correctly', done => {
+      const stream = (client as any).fooBidiStream();
+      stream.write({ id: 3, name: ['Bar'] });
+      stream.end();
+      stream.on('data', (data: FooTest.BarResponse) => {
+        expect(data.result).toEqual('Bar');
       });
       stream.on('end', done);
     });
