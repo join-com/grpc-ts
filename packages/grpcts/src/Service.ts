@@ -1,4 +1,3 @@
-import * as trace from '@join-com/node-trace';
 import * as grpc from 'grpc';
 
 export type handleUnaryCallPromise<RequestType, ResponseType> = (
@@ -20,6 +19,11 @@ export interface Implementations {
 
 export interface Logger {
   info(message: string, payload?: any): void;
+}
+
+export interface Trace {
+  getTraceContextName: () => string;
+  start: (traceId?: string) => void;
 }
 
 const handleError = (e: Error, callback: grpc.sendUnaryData<any>) => {
@@ -61,10 +65,10 @@ const promiseImplementation = <T>(
   }
 };
 
-const wrapImplementationWithTrace = (implementation: handleCall<any, any>) => (
-  call: any,
-  ...args: any[]
-) => {
+const wrapImplementationWithTrace = (
+  implementation: handleCall<any, any>,
+  trace: Trace
+) => (call: any, ...args: any[]) => {
   const traceId = call.metadata.get(trace.getTraceContextName());
   if (traceId) {
     trace.start(traceId.join());
@@ -78,7 +82,8 @@ export class Service<I extends Implementations> {
   constructor(
     rawDefinitions: grpc.ServiceDefinition<any>,
     public readonly implementations: I,
-    private readonly logger?: Logger
+    private readonly logger?: Logger,
+    private readonly trace?: Trace
   ) {
     this.definitions = this.addLogging(rawDefinitions);
     this.grpcImplementations = this.convertToGrpcImplementation(
@@ -133,7 +138,9 @@ export class Service<I extends Implementations> {
         }
         return {
           ...acc,
-          [name]: wrapImplementationWithTrace(newImplementation)
+          [name]: this.trace
+            ? wrapImplementationWithTrace(newImplementation, this.trace)
+            : newImplementation
         };
       },
       {}

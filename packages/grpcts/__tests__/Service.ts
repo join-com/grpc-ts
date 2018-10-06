@@ -1,18 +1,25 @@
-import { Service, Logger } from '../src/Service';
+import { Service, Logger, Trace } from '../src/Service';
 import { FooTest } from './generated/foo/Foo';
 import * as grpc from 'grpc';
 
 let client: grpc.Client;
 let server: grpc.Server;
-let logger = {
+let logger: Logger = {
   info: jest.fn()
+};
+
+const traceContextName = 'trace-context-name';
+let trace: Trace = {
+  getTraceContextName: () => traceContextName,
+  start: jest.fn()
 };
 
 const startService = (implementations: FooTest.TestSvcImplementation) => {
   const service = new Service<FooTest.TestSvcImplementation>(
     FooTest.testSvcServiceDefinition,
     implementations,
-    logger
+    logger,
+    trace
   );
 
   server = new grpc.Server();
@@ -111,6 +118,18 @@ describe('Service', () => {
             );
 
             done();
+          });
+        });
+
+        describe('tracing', () => {
+          it('starts tracing when trace id is sent', done => {
+            const traceId = '66551gggd7128218g28g182dg8172';
+            const metadata = new grpc.Metadata();
+            metadata.set(traceContextName, traceId);
+            (client as any).foo({}, metadata, () => {
+              expect(trace.start).toHaveBeenCalledWith(traceId);
+              done();
+            });
           });
         });
       });
