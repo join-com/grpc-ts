@@ -1,5 +1,4 @@
-import { Level, logger } from '@join-com/gcloud-logger-trace';
-import * as trace from '@join-com/node-trace';
+// import * as trace from '@join-com/node-trace';
 import * as grpc from 'grpc';
 
 export type handleUnaryCallPromise<RequestType, ResponseType> = (
@@ -19,6 +18,10 @@ export interface Implementations {
   [key: string]: handleCall<any, any>;
 }
 
+export interface Logger {
+  info(message: string, payload?: any): void;
+}
+
 const handleError = (e: Error, callback: grpc.sendUnaryData<any>) => {
   const metadata = new grpc.Metadata();
   metadata.set('error', JSON.stringify(e, Object.getOwnPropertyNames(e)));
@@ -32,7 +35,8 @@ const handleError = (e: Error, callback: grpc.sendUnaryData<any>) => {
 };
 
 const wrapDefinition = (
-  definition: grpc.MethodDefinition<any, any>
+  definition: grpc.MethodDefinition<any, any>,
+  logger: Logger
 ): grpc.MethodDefinition<any, any> => ({
   ...definition,
   requestDeserialize: argBuf => {
@@ -62,7 +66,8 @@ export class Service<I extends Implementations> {
   public readonly grpcImplementations: grpc.UntypedServiceImplementation;
   constructor(
     rawDefinitions: grpc.ServiceDefinition<any>,
-    public readonly implementations: I
+    public readonly implementations: I,
+    private readonly logger?: Logger
   ) {
     this.definitions = this.addLogging(rawDefinitions);
     this.grpcImplementations = this.convertToGrpcImplementation(
@@ -74,9 +79,13 @@ export class Service<I extends Implementations> {
     const entries = Object.entries<grpc.MethodDefinition<any, any>>(
       definitions
     );
+    if (!this.logger) {
+      return definitions;
+    }
     const loggedDefinitions = entries.reduce((acc, [name, definition]) => {
       const loggedDefinition: grpc.MethodDefinition<any, any> = wrapDefinition(
-        definition
+        definition,
+        this.logger
       );
       return { ...acc, [name]: loggedDefinition };
     }, {}) as grpc.ServiceDefinition<any>;

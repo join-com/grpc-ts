@@ -1,14 +1,18 @@
-import { Service } from '../src/Service';
+import { Service, Logger } from '../src/Service';
 import { FooTest } from './generated/foo/Foo';
 import * as grpc from 'grpc';
 
 let client: grpc.Client;
 let server: grpc.Server;
+let logger = {
+  info: jest.fn()
+};
 
 const startService = (implementations: FooTest.TestSvcImplementation) => {
   const service = new Service<FooTest.TestSvcImplementation>(
     FooTest.testSvcServiceDefinition,
-    implementations
+    implementations,
+    logger
   );
 
   server = new grpc.Server();
@@ -52,6 +56,7 @@ describe('Service', () => {
 
       beforeEach(() => {
         fooMock.mockClear();
+        logger.info.mockClear();
       });
 
       describe('success', () => {
@@ -80,6 +85,33 @@ describe('Service', () => {
               done();
             }
           );
+        });
+
+        it('logs request and response', done => {
+          const req: FooTest.FooRequest = {
+            id: 11,
+            name: ['john', 'doe'],
+            password: 'qwerty',
+            empty: {}
+          };
+          (client as any)['foo'](req, () => {
+            expect(logger.info).toHaveBeenCalledTimes(2);
+            expect(logger.info).toHaveBeenCalledWith(
+              'GRPC request /TestSvc/Foo',
+              {
+                _id: 11,
+                _name: ['john', 'doe'],
+                _password: 'qwerty',
+                _empty: {}
+              }
+            );
+            expect(logger.info).toHaveBeenCalledWith(
+              'GRPC response /TestSvc/Foo',
+              { result: 'ok' }
+            );
+
+            done();
+          });
         });
       });
 
