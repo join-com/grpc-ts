@@ -180,7 +180,7 @@ describe('Service', () => {
       });
 
       describe('success', () => {
-        it('calls with correct attributes', done => {
+        it('calls correctly', done => {
           const stream = (client as any).fooClientStream(
             (_: any, response: FooTest.BarResponse) => {
               expect(response.result).toEqual('fooClientStream -> 37');
@@ -271,6 +271,37 @@ describe('Service', () => {
           );
         });
       });
+    });
+  });
+
+  describe('server stream call', () => {
+    const fooServerStreamMock = jest.fn(call => {
+      call.write({ result: call.request.name[0] });
+      call.end();
+    });
+
+    beforeAll(() => {
+      startService({
+        foo: jest.fn(),
+        fooServerStream: fooServerStreamMock,
+        fooClientStream: jest.fn(),
+        fooBieStream: jest.fn()
+      });
+    });
+
+    beforeEach(() => {
+      fooServerStreamMock.mockClear();
+    });
+
+    it('calls correctly', done => {
+      const stream = (client as any).fooServerStream({
+        id: 11,
+        name: ['Foo stream']
+      });
+      stream.on('data', (data: FooTest.BarResponse) => {
+        expect(data.result).toEqual('Foo stream');
+      });
+      stream.on('end', done);
     });
   });
 });
