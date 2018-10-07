@@ -1,10 +1,10 @@
-import { Service, Logger, Trace } from '../src/Service';
+import { Service, Trace } from '../src/Service';
 import { FooTest } from './generated/foo/Foo';
 import * as grpc from 'grpc';
 
 let client: grpc.Client;
 let server: grpc.Server;
-let logger: Logger = {
+let logger = {
   info: jest.fn()
 };
 
