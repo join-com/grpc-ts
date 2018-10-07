@@ -16,7 +16,13 @@ server.addService(FooTest.testSvcServiceDefinition, {
     call.on('data', (data: FooTest.FooRequest) => (result += data.id));
     call.on('end', () => callback(null, { result }));
   }),
-  fooBidiStream: jest.fn()
+  fooBidiStream: jest.fn(async call => {
+    for await (const reqRaw of call as any) {
+      const req: FooTest.FooRequest = reqRaw;
+      call.write({ result: `${req.id}` });
+    }
+    call.end();
+  })
 });
 
 const port = server.bind('0.0.0.0:0', grpc.ServerCredentials.createInsecure());
@@ -42,6 +48,12 @@ class TestSvcClient extends Client {
       FooTest.FooRequest,
       FooTest.BarResponse
     >('fooServerStream', req);
+  }
+
+  public fooBidiStream() {
+    return this.makeBidiStreamRequest<FooTest.FooRequest, FooTest.BarResponse>(
+      'fooBidiStream'
+    );
   }
 }
 
@@ -83,6 +95,21 @@ describe('Client', () => {
         result += request.result;
       }
       expect(result).toEqual('john');
+    });
+  });
+
+  describe('bidi stream call', () => {
+    it('calls correctly', async () => {
+      const { call } = client.fooBidiStream();
+      call.write({ id: 3, name: ['Bar'] });
+      call.write({ id: 7 });
+      call.end();
+      let result: string = '';
+      for await (const reqRaw of call as any) {
+        const request: FooTest.BarResponse = reqRaw;
+        result += request.result;
+      }
+      expect(result).toEqual('37');
     });
   });
 });

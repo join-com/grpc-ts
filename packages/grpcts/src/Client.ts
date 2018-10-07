@@ -65,6 +65,16 @@ export class Client {
     ) as grpc.ClientReadableStream<ResponseType>;
     return { call };
   }
+
+  protected makeBidiStreamRequest<RequestType, ResponseType>(
+    methodName: string
+  ) {
+    const call = (this.client as any)[methodName]() as grpc.ClientDuplexStream<
+      RequestType,
+      ResponseType
+    >;
+    return { call };
+  }
 }
 
 // export interface Response {
