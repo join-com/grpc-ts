@@ -55,6 +55,16 @@ export class Client {
     });
     return { call: call!, res };
   }
+
+  protected makeServerStreamRequest<RequestType, ResponseType>(
+    methodName: string,
+    req: RequestType
+  ) {
+    const call = (this.client as any)[methodName](
+      req
+    ) as grpc.ClientReadableStream<ResponseType>;
+    return { call };
+  }
 }
 
 // export interface Response {
