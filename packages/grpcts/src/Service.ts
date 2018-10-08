@@ -28,7 +28,13 @@ export interface Trace {
 
 const handleError = (e: Error, callback: grpc.sendUnaryData<any>) => {
   const metadata = new grpc.Metadata();
-  metadata.set('error', JSON.stringify(e, Object.getOwnPropertyNames(e)));
+  metadata.set(
+    'error',
+    JSON.stringify(
+      e,
+      Object.getOwnPropertyNames(e).filter(prop => prop !== 'stack')
+    )
+  );
   callback(
     {
       code: grpc.status.UNKNOWN,

@@ -1,11 +1,11 @@
 // import * as trace from '@join-com/node-trace';
 import * as grpc from 'grpc';
-// import { CustomError } from './CustomError';
-// import { loadService } from './protoLoader';
-// import { UnknownServerError } from './UnknownServerError';
+import { ClientError } from './ClientError';
+
+type GrpcClient = grpc.Client & { [implementation: string]: any };
 
 export class Client {
-  public client: grpc.Client;
+  public client: GrpcClient;
   constructor(
     definition: grpc.ServiceDefinition<any>,
     address: string,
@@ -13,7 +13,7 @@ export class Client {
     options?: object
   ) {
     const ClientClass = grpc.makeGenericClientConstructor(definition, '', {});
-    this.client = new ClientClass(address, credentials, options);
+    this.client = new ClientClass(address, credentials, options) as GrpcClient;
   }
 
   public close() {
@@ -26,14 +26,10 @@ export class Client {
   ): { call: grpc.ClientUnaryCall; res: Promise<ResponseType> } {
     let call: grpc.ClientUnaryCall | undefined;
     const res = new Promise<ResponseType>((resolve, reject) => {
-      call = (this.client as any)[methodName](
+      call = this.client[methodName](
         req,
-        (err: any, res: ResponseType) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(res);
-          }
+        (err: grpc.ServiceError, res: ResponseType) => {
+          err ? reject(this.convertError(err)) : resolve(res);
         }
       );
     });
@@ -45,12 +41,8 @@ export class Client {
   ) {
     let call: grpc.ClientWritableStream<RequestType> | undefined;
     const res = new Promise<ResponseType>((resolve, reject) => {
-      call = (this.client as any)[methodName]((err: any, res: ResponseType) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(res);
-        }
+      call = this.client[methodName]((err: any, res: ResponseType) => {
+        err ? reject(this.convertError(err)) : resolve(res);
       });
     });
     return { call: call!, res };
@@ -60,20 +52,34 @@ export class Client {
     methodName: string,
     req: RequestType
   ) {
-    const call = (this.client as any)[methodName](
-      req
-    ) as grpc.ClientReadableStream<ResponseType>;
+    const call: grpc.ClientReadableStream<ResponseType> = this.client[
+      methodName
+    ](req);
     return { call };
   }
 
   protected makeBidiStreamRequest<RequestType, ResponseType>(
     methodName: string
   ) {
-    const call = (this.client as any)[methodName]() as grpc.ClientDuplexStream<
+    const call: grpc.ClientDuplexStream<
       RequestType,
       ResponseType
-    >;
+    > = this.client[methodName]();
     return { call };
+  }
+
+  protected convertError(err: grpc.ServiceError) {
+    const { metadata } = err;
+    if (metadata) {
+      const metadataError = metadata.get('error');
+      if (metadataError && metadataError.length > 0) {
+        const errorJSON = JSON.parse(metadataError[0] as string);
+        const error = new ClientError();
+        Object.assign(error, { ...errorJSON, grpcCode: err.code });
+        return error;
+      }
+    }
+    return Object.assign(err, { grpcCode: err.code });
   }
 }
 

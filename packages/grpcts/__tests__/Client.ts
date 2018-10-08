@@ -3,7 +3,7 @@ import * as grpc from 'grpc';
 import { Client } from '../src';
 
 const server = new grpc.Server();
-server.addService(FooTest.testSvcServiceDefinition, {
+const implementationsMock = {
   foo: jest.fn((_, callback) => {
     callback(null, { result: 'ok' });
   }),
@@ -23,7 +23,8 @@ server.addService(FooTest.testSvcServiceDefinition, {
     }
     call.end();
   })
-});
+};
+server.addService(FooTest.testSvcServiceDefinition, implementationsMock);
 
 const port = server.bind('0.0.0.0:0', grpc.ServerCredentials.createInsecure());
 server.start();
@@ -70,19 +71,147 @@ describe('Client', () => {
   });
 
   describe('unary call', () => {
-    it('makes request', async () => {
-      const { res } = client.foo({});
-      expect(await res).toEqual({ _result: 'ok' });
+    describe('success', () => {
+      it('makes request', async () => {
+        const { res } = client.foo({});
+        expect(await res).toEqual({ _result: 'ok' });
+      });
+    });
+    describe('error', () => {
+      describe('error key in metadata', () => {
+        beforeEach(() => {
+          implementationsMock.foo.mockImplementation(
+            (_: any, callback: grpc.sendUnaryData<any>) => {
+              const e = new Error('my error') as any;
+              e.code = 'MY_ERROR';
+              const metadata = new grpc.Metadata();
+              metadata.set(
+                'error',
+                JSON.stringify(
+                  e,
+                  Object.getOwnPropertyNames(e).filter(prop => prop !== 'stack')
+                )
+              );
+              callback(
+                {
+                  code: grpc.status.UNKNOWN,
+                  metadata
+                } as any,
+                {}
+              );
+            }
+          );
+        });
+
+        it('returns an error from metadata', async () => {
+          try {
+            const { res } = client.foo({});
+            await res;
+            expect('have not called').toEqual('have called');
+          } catch (e) {
+            expect(e.code).toEqual('MY_ERROR');
+            expect(e.message).toEqual('my error');
+            expect(e.grpcCode).toEqual(grpc.status.UNKNOWN);
+          }
+        });
+      });
+
+      describe('no error key in metadata', () => {
+        beforeEach(() => {
+          implementationsMock.foo.mockImplementation(
+            (_: any, callback: grpc.sendUnaryData<any>) => {
+              callback({ code: grpc.status.UNKNOWN } as any, {});
+            }
+          );
+        });
+
+        it('returns an grpc error', async () => {
+          try {
+            const { res } = client.foo({});
+            await res;
+            expect('have not called').toEqual('have called');
+          } catch (e) {
+            expect(e.message).toEqual('2 UNKNOWN: Unknown Error');
+            expect(e.grpcCode).toEqual(grpc.status.UNKNOWN);
+          }
+        });
+      });
     });
   });
 
   describe('client stream call', () => {
-    it('calls correctly', async () => {
-      const { call, res } = client.fooClientStream();
-      call.write({ id: 3, name: ['Bar'] });
-      call.write({ id: 7 });
-      call.end();
-      expect(await res).toEqual({ _result: '37' });
+    describe('success', () => {
+      it('calls correctly', async () => {
+        const { call, res } = client.fooClientStream();
+        call.write({ id: 3, name: ['Bar'] });
+        call.write({ id: 7 });
+        call.end();
+        expect(await res).toEqual({ _result: '37' });
+      });
+    });
+    describe('error', () => {
+      describe('error key in metadata', () => {
+        beforeEach(() => {
+          implementationsMock.fooClientStream.mockImplementation(
+            (_: any, callback: grpc.sendUnaryData<any>) => {
+              const e = new Error('my error') as any;
+              e.code = 'MY_ERROR';
+              const metadata = new grpc.Metadata();
+              metadata.set(
+                'error',
+                JSON.stringify(
+                  e,
+                  Object.getOwnPropertyNames(e).filter(prop => prop !== 'stack')
+                )
+              );
+              callback(
+                {
+                  code: grpc.status.UNKNOWN,
+                  metadata
+                } as any,
+                {}
+              );
+            }
+          );
+        });
+
+        it('returns an error from metadata', async () => {
+          try {
+            const { res, call } = client.fooClientStream();
+            call.write({ id: 7 });
+            call.end();
+            await res;
+            expect('have not called').toEqual('have called');
+          } catch (e) {
+            expect(e.code).toEqual('MY_ERROR');
+            expect(e.message).toEqual('my error');
+            expect(e.grpcCode).toEqual(grpc.status.UNKNOWN);
+          }
+        });
+      });
+
+      describe('no error key in metadata', () => {
+        beforeEach(() => {
+          implementationsMock.fooClientStream.mockImplementation(
+            (_: any, callback: grpc.sendUnaryData<any>) => {
+              callback({ code: grpc.status.UNKNOWN } as any, {});
+            }
+          );
+        });
+
+        it('returns an grpc error', async () => {
+          try {
+            const { res, call } = client.fooClientStream();
+            call.write({ id: 7 });
+            call.end();
+            await res;
+            expect('have not called').toEqual('have called');
+          } catch (e) {
+            expect(e.message).toEqual('2 UNKNOWN: Unknown Error');
+            expect(e.grpcCode).toEqual(grpc.status.UNKNOWN);
+          }
+        });
+      });
     });
   });
 
