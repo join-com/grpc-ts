@@ -1,0 +1,16 @@
+import * as grpc from 'grpc';
+
+export interface Metadata {
+  [key: string]: string;
+}
+
+export const toGRPCMetadata = (metadata?: Metadata) => {
+  if (!metadata) {
+    return;
+  }
+  const meta = new grpc.Metadata();
+  Object.entries(metadata).forEach(([key, value]) => {
+    meta.set(key, value);
+  });
+  return meta;
+};
