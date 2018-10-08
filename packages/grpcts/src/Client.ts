@@ -75,7 +75,11 @@ export class Client {
       if (metadataError && metadataError.length > 0) {
         const errorJSON = JSON.parse(metadataError[0] as string);
         const error = new ClientError();
-        Object.assign(error, { ...errorJSON, grpcCode: err.code });
+        Object.assign(error, {
+          ...errorJSON,
+          grpcCode: err.code,
+          metadata: err.metadata
+        });
         return error;
       }
     }

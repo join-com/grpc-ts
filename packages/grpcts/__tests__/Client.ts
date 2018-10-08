@@ -92,6 +92,7 @@ describe('Client', () => {
                   Object.getOwnPropertyNames(e).filter(prop => prop !== 'stack')
                 )
               );
+              metadata.set('foo', 'bar');
               callback(
                 {
                   code: grpc.status.UNKNOWN,
@@ -112,6 +113,16 @@ describe('Client', () => {
             expect(e.code).toEqual('MY_ERROR');
             expect(e.message).toEqual('my error');
             expect(e.grpcCode).toEqual(grpc.status.UNKNOWN);
+          }
+        });
+
+        it('attaches metadata', async () => {
+          try {
+            const { res } = client.foo({});
+            await res;
+            expect('have not called').toEqual('have called');
+          } catch (e) {
+            expect(e.metadata.get('foo')).toEqual(['bar']);
           }
         });
       });
