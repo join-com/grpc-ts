@@ -1,7 +1,11 @@
 import * as grpc from 'grpc';
 import { ClientError } from './ClientError';
 import { toGRPCMetadata, Metadata } from './metadata';
-import { Trace } from './Service';
+
+export interface Trace {
+  getTraceContext: () => string;
+  getTraceContextName: () => string;
+}
 
 type GrpcClient = grpc.Client & { [implementation: string]: any };
 

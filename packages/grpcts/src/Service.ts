@@ -22,7 +22,6 @@ export interface Logger {
 }
 
 export interface Trace {
-  getTraceContext: () => string;
   getTraceContextName: () => string;
   start: (traceId?: string) => void;
 }
@@ -84,17 +83,17 @@ const wrapImplementationWithTrace = (
 };
 
 export class Service<I extends Implementations> {
-  public readonly definitions: grpc.ServiceDefinition<any>;
-  public readonly grpcImplementations: grpc.UntypedServiceImplementation;
+  public readonly serviceDefinition: grpc.ServiceDefinition<any>;
+  public readonly implementations: grpc.UntypedServiceImplementation;
   constructor(
     rawDefinitions: grpc.ServiceDefinition<any>,
-    public readonly implementations: I,
+    public readonly rawImplementations: I,
     private readonly logger?: Logger,
     private readonly trace?: Trace
   ) {
-    this.definitions = this.addLogging(rawDefinitions);
-    this.grpcImplementations = this.convertToGrpcImplementation(
-      this.implementations
+    this.serviceDefinition = this.addLogging(rawDefinitions);
+    this.implementations = this.convertToGrpcImplementation(
+      this.rawImplementations
     );
   }
 
@@ -123,12 +122,12 @@ export class Service<I extends Implementations> {
         let newImplementation: handleCall<any, any>;
 
         const isClientStream =
-          !this.definitions[name].responseStream &&
-          this.definitions[name].requestStream;
+          !this.serviceDefinition[name].responseStream &&
+          this.serviceDefinition[name].requestStream;
 
         const isUnary =
-          !this.definitions[name].responseStream &&
-          !this.definitions[name].requestStream;
+          !this.serviceDefinition[name].responseStream &&
+          !this.serviceDefinition[name].requestStream;
 
         const hasCallback = implementation.length === 2;
 

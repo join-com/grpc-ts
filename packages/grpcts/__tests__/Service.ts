@@ -23,7 +23,7 @@ const startService = (implementations: FooTest.TestSvcImplementation) => {
   );
 
   server = new grpc.Server();
-  server.addService(service.definitions, service.grpcImplementations);
+  server.addService(service.serviceDefinition, service.implementations);
 
   const port = server.bind(
     '0.0.0.0:0',

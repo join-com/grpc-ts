@@ -1,7 +1,11 @@
 import { Logger } from '@join-com/gcloud-logger';
 import { logger as traceLogger } from '@join-com/gcloud-logger-trace';
 import * as grpc from 'grpc';
-import { Service } from './Service';
+
+export interface Service {
+  serviceDefinition: grpc.ServiceDefinition<any>;
+  implementations: grpc.UntypedServiceImplementation;
+}
 
 export class Server {
   public readonly server: grpc.Server;
@@ -9,16 +13,13 @@ export class Server {
 
   constructor(
     private readonly credentials: grpc.ServerCredentials,
-    private readonly logger: Logger = traceLogger,
+    private readonly logger: Logger = traceLogger
   ) {
     this.server = new grpc.Server();
   }
 
-  public addService<T>(service: Service<T>) {
-    this.server.addService(
-      service.serviceDefinition,
-      service.wrappedImplementations(),
-    );
+  public addService(service: Service) {
+    this.server.addService(service.serviceDefinition, service.implementations);
   }
 
   public async start(host: string) {
