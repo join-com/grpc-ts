@@ -4,10 +4,7 @@ export interface Metadata {
   [key: string]: string;
 }
 
-export const toGRPCMetadata = (metadata?: Metadata) => {
-  if (!metadata) {
-    return;
-  }
+export const toGRPCMetadata = (metadata: Metadata) => {
   const meta = new grpc.Metadata();
   Object.entries(metadata).forEach(([key, value]) => {
     meta.set(key, value);

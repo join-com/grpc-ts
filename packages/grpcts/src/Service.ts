@@ -22,6 +22,7 @@ export interface Logger {
 }
 
 export interface Trace {
+  getTraceContext: () => string;
   getTraceContextName: () => string;
   start: (traceId?: string) => void;
 }

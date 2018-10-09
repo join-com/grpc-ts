@@ -1,7 +1,7 @@
-// import * as trace from '@join-com/node-trace';
 import * as grpc from 'grpc';
 import { ClientError } from './ClientError';
 import { toGRPCMetadata, Metadata } from './metadata';
+import { Trace } from './Service';
 
 type GrpcClient = grpc.Client & { [implementation: string]: any };
 
@@ -11,6 +11,7 @@ export class Client {
     definition: grpc.ServiceDefinition<any>,
     address: string,
     credentials: grpc.ChannelCredentials,
+    public readonly trace?: Trace,
     options?: object
   ) {
     const ClientClass = grpc.makeGenericClientConstructor(definition, '', {});
@@ -30,7 +31,7 @@ export class Client {
     const res = new Promise<ResponseType>((resolve, reject) => {
       call = this.client[methodName](
         req,
-        toGRPCMetadata(metadata),
+        this.metadata(metadata),
         (err: grpc.ServiceError, res: ResponseType) => {
           err ? reject(this.convertError(err)) : resolve(res);
         }
@@ -46,7 +47,7 @@ export class Client {
     let call: grpc.ClientWritableStream<RequestType> | undefined;
     const res = new Promise<ResponseType>((resolve, reject) => {
       call = this.client[methodName](
-        toGRPCMetadata(metadata),
+        this.metadata(metadata),
         (err: any, res: ResponseType) => {
           err ? reject(this.convertError(err)) : resolve(res);
         }
@@ -62,7 +63,7 @@ export class Client {
   ) {
     const call: grpc.ClientReadableStream<ResponseType> = this.client[
       methodName
-    ](req, toGRPCMetadata(metadata));
+    ](req, this.metadata(metadata));
     return { call };
   }
 
@@ -73,7 +74,7 @@ export class Client {
     const call: grpc.ClientDuplexStream<
       RequestType,
       ResponseType
-    > = this.client[methodName](toGRPCMetadata(metadata));
+    > = this.client[methodName](this.metadata(metadata));
     return { call };
   }
 
@@ -94,97 +95,20 @@ export class Client {
     }
     return Object.assign(err, { grpcCode: err.code });
   }
+
+  private metadata(attrs?: Metadata) {
+    const grpcMetadata = attrs ? toGRPCMetadata(attrs) : new grpc.Metadata();
+    if (this.trace) {
+      return this.addTraceMetadata(this.trace, grpcMetadata);
+    }
+    return grpcMetadata;
+  }
+
+  private addTraceMetadata(trace: Trace, grpcMetadata: grpc.Metadata) {
+    const traceId = trace.getTraceContext();
+    if (traceId) {
+      grpcMetadata.add(trace.getTraceContextName(), trace.getTraceContext());
+    }
+    return grpcMetadata;
+  }
 }
-
-// export interface Response {
-//   error?: Error;
-//   result: any;
-// }
-
-// export type Callback<T> = (error?: Error, result?: T) => void;
-
-// const responseHandler = (
-//   resolve: (value?: {} | PromiseLike<{}> | undefined) => void,
-//   reject: (reason?: any) => void,
-// ) => {
-//   return (err: Error, response: Response) => {
-//     if (err) {
-//       reject(new UnknownServerError(err));
-//     } else if (response.error) {
-//       reject(new CustomError(response.error));
-//     } else {
-//       resolve(response.result);
-//     }
-//   };
-// };
-
-// const originCallback = <T>(callback: Callback<T>) => (
-//   err: Error,
-//   response: Response,
-// ) => {
-//   if (err) {
-//     callback(new UnknownServerError(err));
-//   } else if (response.error) {
-//     callback(new CustomError(response.error));
-//   } else {
-//     callback(undefined, response.result);
-//   }
-// };
-
-// export class Client {
-//   private client: any;
-
-//   constructor(
-//     protoPath: string,
-//     includeDirs: string[],
-//     packageName: string,
-//     serviceName: string,
-//     host: string,
-//     credentials: grpc.ChannelCredentials,
-//   ) {
-//     const packageDefinition = loadService(protoPath, includeDirs);
-//     const definition = packageName
-//       .split('.')
-//       .reduce((acc, val) => acc[val], packageDefinition);
-//     const Service = definition[serviceName];
-//     this.client = new Service(host, credentials);
-//   }
-
-//   public close() {
-//     return grpc.closeClient(this.client);
-//   }
-
-//   protected makeServerStreamRequest(fnName: string, attrs = {}) {
-//     return this.client[fnName](attrs, this.traceMetadata);
-//   }
-
-//   protected makeBidiStreamRequest(fnName: string) {
-//     return this.client[fnName](this.traceMetadata);
-//   }
-
-//   protected makeClientStreamRequest<ResponseType>(
-//     fnName: string,
-//     callback: Callback<ResponseType>,
-//   ) {
-//     return this.client[fnName](this.traceMetadata, originCallback(callback));
-//   }
-
-//   protected makeUnaryRequest(fnName: string, attrs = {}): Promise<any> {
-//     return new Promise((resolve, reject) =>
-//       this.client[fnName](
-//         attrs,
-//         this.traceMetadata,
-//         responseHandler(resolve, reject),
-//       ),
-//     );
-//   }
-
-//   private get traceMetadata() {
-//     const metadata = new grpc.Metadata();
-//     const traceId = trace.getTraceContext();
-//     if (traceId) {
-//       metadata.add(trace.getTraceContextName(), trace.getTraceContext());
-//     }
-//     return metadata;
-//   }
-// }
