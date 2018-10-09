@@ -1,6 +1,7 @@
 import { FooTest } from './generated/foo/Foo';
 import * as grpc from 'grpc';
 import { Client } from '../src';
+import { Metadata } from '../src/metadata';
 
 const server = new grpc.Server();
 const implementationsMock = {
@@ -30,38 +31,48 @@ const port = server.bind('0.0.0.0:0', grpc.ServerCredentials.createInsecure());
 server.start();
 
 class TestSvcClient extends Client {
-  public foo(req: FooTest.FooRequest) {
+  public foo(req: FooTest.FooRequest, metadata?: Metadata) {
     return this.makeUnaryRequest<FooTest.FooRequest, FooTest.BarResponse>(
       'foo',
-      req
+      req,
+      metadata
     );
   }
 
-  public fooClientStream() {
+  public fooClientStream(metadata?: Metadata) {
     return this.makeClientStreamRequest<
       FooTest.FooRequest,
       FooTest.BarResponse
-    >('fooClientStream');
+    >('fooClientStream', metadata);
   }
 
-  public fooServerStream(req: FooTest.FooRequest) {
+  public fooServerStream(req: FooTest.FooRequest, metadata?: Metadata) {
     return this.makeServerStreamRequest<
       FooTest.FooRequest,
       FooTest.BarResponse
-    >('fooServerStream', req);
+    >('fooServerStream', req, metadata);
   }
 
-  public fooBidiStream() {
+  public fooBidiStream(metadata?: Metadata) {
     return this.makeBidiStreamRequest<FooTest.FooRequest, FooTest.BarResponse>(
-      'fooBidiStream'
+      'fooBidiStream',
+      metadata
     );
   }
 }
 
+const traceContextName = 'trace-name';
+const traceContext = 'trace-context';
+let trace = {
+  getTraceContextName: () => traceContextName,
+  getTraceContext: () => traceContext
+};
+
 const client = new TestSvcClient(
   FooTest.testSvcServiceDefinition,
   `0.0.0.0:${port}`,
-  grpc.credentials.createInsecure()
+  grpc.credentials.createInsecure(),
+  trace
 );
 
 describe('Client', () => {
@@ -70,13 +81,36 @@ describe('Client', () => {
     server.forceShutdown();
   });
 
+  beforeEach(() => {
+    implementationsMock.foo.mockClear();
+    implementationsMock.fooClientStream.mockClear();
+    implementationsMock.fooServerStream.mockClear();
+    implementationsMock.fooBidiStream.mockClear();
+  });
+
   describe('unary call', () => {
     describe('success', () => {
+      let response: FooTest.BarResponse;
+      beforeEach(async () => {
+        const { res } = client.foo({}, { foo: 'bar' });
+        response = await res;
+      });
+
       it('makes request', async () => {
-        const { res } = client.foo({});
-        expect(await res).toEqual({ _result: 'ok' });
+        expect(response).toEqual({ _result: 'ok' });
+      });
+
+      it('attaches traceId', async () => {
+        const { metadata } = implementationsMock.foo.mock.calls[0][0];
+        expect(metadata.get(traceContextName)).toEqual([traceContext]);
+      });
+
+      it('sends metadata', async () => {
+        const { metadata } = implementationsMock.foo.mock.calls[0][0];
+        expect(metadata.get('foo')).toEqual(['bar']);
       });
     });
+
     describe('error', () => {
       describe('error key in metadata', () => {
         beforeEach(() => {
@@ -104,26 +138,31 @@ describe('Client', () => {
           );
         });
 
-        it('returns an error from metadata', async () => {
+        let error: any;
+
+        beforeEach(async () => {
           try {
             const { res } = client.foo({});
             await res;
             expect('have not called').toEqual('have called');
           } catch (e) {
-            expect(e.code).toEqual('MY_ERROR');
-            expect(e.message).toEqual('my error');
-            expect(e.grpcCode).toEqual(grpc.status.UNKNOWN);
+            error = e;
           }
         });
 
+        it('returns an error from metadata', () => {
+          expect(error.code).toEqual('MY_ERROR');
+          expect(error.message).toEqual('my error');
+          expect(error.grpcCode).toEqual(grpc.status.UNKNOWN);
+        });
+
         it('attaches metadata', async () => {
-          try {
-            const { res } = client.foo({});
-            await res;
-            expect('have not called').toEqual('have called');
-          } catch (e) {
-            expect(e.metadata.get('foo')).toEqual(['bar']);
-          }
+          expect(error.metadata.get('foo')).toEqual(['bar']);
+        });
+
+        it('attaches traceId', async () => {
+          const { metadata } = implementationsMock.foo.mock.calls[0][0];
+          expect(metadata.get(traceContextName)).toEqual([traceContext]);
         });
       });
 
@@ -152,14 +191,34 @@ describe('Client', () => {
 
   describe('client stream call', () => {
     describe('success', () => {
-      it('calls correctly', async () => {
-        const { call, res } = client.fooClientStream();
+      let response: FooTest.BarResponse;
+      beforeEach(async () => {
+        const { call, res } = client.fooClientStream({ foo: 'bar' });
         call.write({ id: 3, name: ['Bar'] });
         call.write({ id: 7 });
         call.end();
-        expect(await res).toEqual({ _result: '37' });
+        response = await res;
+      });
+
+      it('calls correctly', () => {
+        expect(response).toEqual({ _result: '37' });
+      });
+
+      it('attaches traceId', async () => {
+        const {
+          metadata
+        } = implementationsMock.fooClientStream.mock.calls[0][0];
+        expect(metadata.get(traceContextName)).toEqual([traceContext]);
+      });
+
+      it('sends metadata', async () => {
+        const {
+          metadata
+        } = implementationsMock.fooClientStream.mock.calls[0][0];
+        expect(metadata.get('foo')).toEqual(['bar']);
       });
     });
+
     describe('error', () => {
       describe('error key in metadata', () => {
         beforeEach(() => {
@@ -175,6 +234,7 @@ describe('Client', () => {
                   Object.getOwnPropertyNames(e).filter(prop => prop !== 'stack')
                 )
               );
+              metadata.set('foo', 'bar');
               callback(
                 {
                   code: grpc.status.UNKNOWN,
@@ -186,7 +246,9 @@ describe('Client', () => {
           );
         });
 
-        it('returns an error from metadata', async () => {
+        let error: any;
+
+        beforeEach(async () => {
           try {
             const { res, call } = client.fooClientStream();
             call.write({ id: 7 });
@@ -194,10 +256,25 @@ describe('Client', () => {
             await res;
             expect('have not called').toEqual('have called');
           } catch (e) {
-            expect(e.code).toEqual('MY_ERROR');
-            expect(e.message).toEqual('my error');
-            expect(e.grpcCode).toEqual(grpc.status.UNKNOWN);
+            error = e;
           }
+        });
+
+        it('returns an error from metadata', () => {
+          expect(error.code).toEqual('MY_ERROR');
+          expect(error.message).toEqual('my error');
+          expect(error.grpcCode).toEqual(grpc.status.UNKNOWN);
+        });
+
+        it('attaches metadata', async () => {
+          expect(error.metadata.get('foo')).toEqual(['bar']);
+        });
+
+        it('attaches traceId', async () => {
+          const {
+            metadata
+          } = implementationsMock.fooClientStream.mock.calls[0][0];
+          expect(metadata.get(traceContextName)).toEqual([traceContext]);
         });
       });
 
@@ -227,29 +304,48 @@ describe('Client', () => {
   });
 
   describe('server stream call', () => {
-    it('calls correctly', async () => {
-      const { call } = client.fooServerStream({ name: ['john'] });
-      let result: string = '';
+    let result: string = '';
+    beforeEach(async () => {
+      const { call } = client.fooServerStream(
+        { name: ['john'] },
+        { foo: 'bar' }
+      );
       for await (const reqRaw of call as any) {
         const request: FooTest.BarResponse = reqRaw;
         result += request.result;
       }
+    });
+
+    it('calls correctly', async () => {
       expect(result).toEqual('john');
+    });
+
+    it('sends metadata', async () => {
+      const { metadata } = implementationsMock.fooServerStream.mock.calls[0][0];
+      expect(metadata.get('foo')).toEqual(['bar']);
     });
   });
 
   describe('bidi stream call', () => {
-    it('calls correctly', async () => {
-      const { call } = client.fooBidiStream();
+    let result: string = '';
+    beforeEach(async () => {
+      const { call } = client.fooBidiStream({ foo: 'bar' });
       call.write({ id: 3, name: ['Bar'] });
       call.write({ id: 7 });
       call.end();
-      let result: string = '';
       for await (const reqRaw of call as any) {
         const request: FooTest.BarResponse = reqRaw;
         result += request.result;
       }
+    });
+
+    it('calls correctly', async () => {
       expect(result).toEqual('37');
+    });
+
+    it('sends metadata', async () => {
+      const { metadata } = implementationsMock.fooBidiStream.mock.calls[0][0];
+      expect(metadata.get('foo')).toEqual(['bar']);
     });
   });
 });
