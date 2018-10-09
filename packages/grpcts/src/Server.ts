@@ -1,10 +1,12 @@
-import { Logger } from '@join-com/gcloud-logger';
-import { logger as traceLogger } from '@join-com/gcloud-logger-trace';
 import * as grpc from 'grpc';
 
 export interface Service {
   serviceDefinition: grpc.ServiceDefinition<any>;
   implementations: grpc.UntypedServiceImplementation;
+}
+
+export interface Logger {
+  info(message: string, payload?: any): void;
 }
 
 export class Server {
@@ -13,7 +15,7 @@ export class Server {
 
   constructor(
     private readonly credentials: grpc.ServerCredentials,
-    private readonly logger: Logger = traceLogger
+    private readonly logger?: Logger
   ) {
     this.server = new grpc.Server();
   }
@@ -28,7 +30,9 @@ export class Server {
     if (this.port === 0) {
       throw Error(`Can not connect to host ${host}`);
     }
-    this.logger.info(`grpc server is listening on ${hostName}:${this.port}`);
+    if (this.logger) {
+      this.logger.info(`grpc server is listening on ${hostName}:${this.port}`);
+    }
     this.server.start();
     return this.server;
   }

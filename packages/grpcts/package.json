@@ -37,7 +37,6 @@
   ],
   "devDependencies": {
     "@types/jest": "^23.3.3",
-    "@types/lodash": "^4.14.116",
     "@types/node": "^10.11.4",
     "jest": "^23.6.0",
     "jest-cli": "^23.6.0",
@@ -48,10 +47,6 @@
     "typescript": "^3.1.1"
   },
   "dependencies": {
-    "@join-com/gcloud-logger-trace": "^0.1.5",
-    "@join-com/node-trace": "^0.1.5",
-    "@join-com/protobufjs-wrappers": "^6.8.7",
-    "grpc": "^1.15.1",
-    "lodash": "^4.17.11"
+    "grpc": "^1.15.1"
   }
 }

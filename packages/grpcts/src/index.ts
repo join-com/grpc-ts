@@ -1,4 +1,4 @@
-export { Client, Callback } from './Client';
+export { Client } from './Client';
 export {
   Service,
   handleUnaryCallPromise,
