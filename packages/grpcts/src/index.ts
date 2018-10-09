@@ -9,3 +9,4 @@ export {
 export { Server } from './Server';
 import * as grpcOriginal from 'grpc';
 export const grpc = grpcOriginal;
+export { Metadata } from './metadata';

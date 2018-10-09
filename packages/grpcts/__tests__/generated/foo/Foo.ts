@@ -281,4 +281,33 @@ export namespace FooTest {
       call: grpc.ServerDuplexStream<FooRequest, StreamBarResponse>
     ): void;
   }
+
+  export class TestSvcClient extends grpcts.Client {
+    public foo(req: FooRequest, metadata?: grpcts.Metadata) {
+      return super.makeUnaryRequest<FooRequest, BarResponse>(
+        'foo',
+        req,
+        metadata
+      );
+    }
+    public fooServerStream(req: FooRequest, metadata?: grpcts.Metadata) {
+      return super.makeServerStreamRequest<FooRequest, StreamBarResponse>(
+        'fooServerStream',
+        req,
+        metadata
+      );
+    }
+    public fooClientStream(metadata?: grpcts.Metadata) {
+      return super.makeClientStreamRequest<FooRequest, BarResponse>(
+        'fooClientStream',
+        metadata
+      );
+    }
+    public fooBidiStream(metadata?: grpcts.Metadata) {
+      return super.makeBidiStreamRequest<FooRequest, StreamBarResponse>(
+        'fooBidiStream',
+        metadata
+      );
+    }
+  }
 }

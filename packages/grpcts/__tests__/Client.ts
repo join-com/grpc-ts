@@ -1,7 +1,5 @@
 import { FooTest } from './generated/foo/Foo';
 import * as grpc from 'grpc';
-import { Client } from '../src';
-import { Metadata } from '../src/metadata';
 
 const server = new grpc.Server();
 const implementationsMock = {
@@ -30,37 +28,6 @@ server.addService(FooTest.testSvcServiceDefinition, implementationsMock);
 const port = server.bind('0.0.0.0:0', grpc.ServerCredentials.createInsecure());
 server.start();
 
-class TestSvcClient extends Client {
-  public foo(req: FooTest.FooRequest, metadata?: Metadata) {
-    return this.makeUnaryRequest<FooTest.FooRequest, FooTest.BarResponse>(
-      'foo',
-      req,
-      metadata
-    );
-  }
-
-  public fooClientStream(metadata?: Metadata) {
-    return this.makeClientStreamRequest<
-      FooTest.FooRequest,
-      FooTest.BarResponse
-    >('fooClientStream', metadata);
-  }
-
-  public fooServerStream(req: FooTest.FooRequest, metadata?: Metadata) {
-    return this.makeServerStreamRequest<
-      FooTest.FooRequest,
-      FooTest.BarResponse
-    >('fooServerStream', req, metadata);
-  }
-
-  public fooBidiStream(metadata?: Metadata) {
-    return this.makeBidiStreamRequest<FooTest.FooRequest, FooTest.BarResponse>(
-      'fooBidiStream',
-      metadata
-    );
-  }
-}
-
 const traceContextName = 'trace-name';
 const traceContext = 'trace-context';
 let trace = {
@@ -68,7 +35,7 @@ let trace = {
   getTraceContext: () => traceContext
 };
 
-const client = new TestSvcClient(
+const client = new FooTest.TestSvcClient(
   FooTest.testSvcServiceDefinition,
   `0.0.0.0:${port}`,
   grpc.credentials.createInsecure(),
