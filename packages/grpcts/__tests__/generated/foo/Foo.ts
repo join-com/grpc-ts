@@ -28,22 +28,22 @@ export namespace FooTest {
         const tag = reader.uint32();
         switch (tag >>> 3) {
           case 1:
-            message._id = reader.int32();
+            message.id = reader.int32();
             break;
           case 2:
-            if (!(message._name && message._name.length)) {
-              message._name = [];
+            if (!(message.name && message.name.length)) {
+              message.name = [];
             }
-            message._name.push(reader.string());
+            message.name.push(reader.string());
             break;
           case 3:
-            message._password = reader.string();
+            message.password = reader.string();
             break;
           case 4:
-            message._token = reader.string();
+            message.token = reader.string();
             break;
           case 5:
-            message._empty = FooCommon.EmptyMessageMsg.decode(
+            message.empty = FooCommon.EmptyMessageMsg.decode(
               reader,
               reader.uint32()
             );
@@ -55,64 +55,34 @@ export namespace FooTest {
       }
       return message;
     }
-    private _id?: number;
-    private _name?: string[];
-    private _password?: string;
-    private _token?: string;
-    private _empty?: FooCommon.EmptyMessage;
+    public id?: number;
+    public name?: string[];
+    public password?: string;
+    public token?: string;
+    public empty?: FooCommon.EmptyMessage;
     constructor(attrs?: FooRequest) {
       Object.assign(this, attrs);
     }
     public encode(writer: protobufjs.Writer = protobufjs.Writer.create()) {
-      if (this._id != null) {
-        writer.uint32(8).int32(this._id);
+      if (this.id != null) {
+        writer.uint32(8).int32(this.id);
       }
-      if (this._name != null) {
-        for (const value of this._name) {
+      if (this.name != null) {
+        for (const value of this.name) {
           writer.uint32(18).string(value);
         }
       }
-      if (this._password != null) {
-        writer.uint32(26).string(this._password);
+      if (this.password != null) {
+        writer.uint32(26).string(this.password);
       }
-      if (this._token != null) {
-        writer.uint32(34).string(this._token);
+      if (this.token != null) {
+        writer.uint32(34).string(this.token);
       }
-      if (this._empty != null) {
-        const msg = new FooCommon.EmptyMessageMsg(this._empty);
+      if (this.empty != null) {
+        const msg = new FooCommon.EmptyMessageMsg(this.empty);
         msg.encode(writer.uint32(42).fork()).ldelim();
       }
       return writer;
-    }
-    public get id() {
-      return this._id;
-    }
-    public set id(val) {
-      this._id = val;
-    }
-    public get name() {
-      return this._name;
-    }
-    public set name(val) {
-      this._name = val;
-    }
-    public get password() {
-      return this._password;
-    }
-    public set password(val) {
-      this._password = val;
-    }
-    public get token() {
-      return this._token;
-    }
-    public set token(val) {
-      this._token = val;
-    }
-    public get empty() {
-      return this._empty;
-    }
-    public set empty(val) {
-      this._empty = new FooCommon.EmptyMessageMsg(val);
     }
   }
 
@@ -134,7 +104,7 @@ export namespace FooTest {
         const tag = reader.uint32();
         switch (tag >>> 3) {
           case 1:
-            message._result = reader.string();
+            message.result = reader.string();
             break;
           default:
             reader.skipType(tag & 7);
@@ -143,21 +113,15 @@ export namespace FooTest {
       }
       return message;
     }
-    private _result?: string;
+    public result?: string;
     constructor(attrs?: StreamBarResponse) {
       Object.assign(this, attrs);
     }
     public encode(writer: protobufjs.Writer = protobufjs.Writer.create()) {
-      if (this._result != null) {
-        writer.uint32(10).string(this._result);
+      if (this.result != null) {
+        writer.uint32(10).string(this.result);
       }
       return writer;
-    }
-    public get result() {
-      return this._result;
-    }
-    public set result(val) {
-      this._result = val;
     }
   }
 
@@ -179,7 +143,7 @@ export namespace FooTest {
         const tag = reader.uint32();
         switch (tag >>> 3) {
           case 2:
-            message._result = reader.string();
+            message.result = reader.string();
             break;
           default:
             reader.skipType(tag & 7);
@@ -188,21 +152,15 @@ export namespace FooTest {
       }
       return message;
     }
-    private _result?: string;
+    public result?: string;
     constructor(attrs?: BarResponse) {
       Object.assign(this, attrs);
     }
     public encode(writer: protobufjs.Writer = protobufjs.Writer.create()) {
-      if (this._result != null) {
-        writer.uint32(18).string(this._result);
+      if (this.result != null) {
+        writer.uint32(18).string(this.result);
       }
       return writer;
-    }
-    public get result() {
-      return this._result;
-    }
-    public set result(val) {
-      this._result = val;
     }
   }
 
