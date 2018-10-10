@@ -1,6 +1,6 @@
 {
   "name": "@join-com/grpc-ts",
-  "version": "0.1.21",
+  "version": "1.0.0-0",
   "description": "grpc typescript wrapper",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
