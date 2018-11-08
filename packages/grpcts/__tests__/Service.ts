@@ -137,7 +137,13 @@ describe('Service', () => {
       describe('error', () => {
         beforeEach(() => {
           fooMock.mockImplementation(async () => {
-            throw new Error('Something wrong');
+            const err: any = new Error('Something wrong');
+            err.nested = [
+              {
+                nestedField: 'nested'
+              }
+            ];
+            throw err;
           });
         });
 
@@ -152,6 +158,18 @@ describe('Service', () => {
           (client as any)['foo']({}, (error: any, _: FooTest.BarResponse) => {
             const err = JSON.parse(error.metadata.get('error'));
             expect(err.message).toEqual('Something wrong');
+            done();
+          });
+        });
+
+        it('converts nested propery', done => {
+          (client as any)['foo']({}, (error: any, _: FooTest.BarResponse) => {
+            const err = JSON.parse(error.metadata.get('error'));
+            expect(err.nested).toEqual([
+              {
+                nestedField: 'nested'
+              }
+            ]);
             done();
           });
         });
