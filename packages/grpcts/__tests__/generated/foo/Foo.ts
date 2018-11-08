@@ -1,9 +1,12 @@
 // GENERATED CODE -- DO NOT EDIT!
 import { FooCommon } from '../common/Common';
 import * as protobufjs from 'protobufjs/minimal';
+// @ts-ignore ignored as it's generated and it's difficult to predict if logger is needed
+import { logger } from '@join-com/gcloud-logger-trace';
 
 import * as grpc from 'grpc';
 import * as grpcts from '../../../src';
+import * as nodeTrace from '@join-com/node-trace';
 
 export namespace FooTest {
   export interface FooRequest {
@@ -241,6 +244,14 @@ export namespace FooTest {
   }
 
   export class TestSvcClient extends grpcts.Client {
+    constructor(
+      address: string,
+      credentials: grpc.ChannelCredentials,
+      trace: grpcts.ClientTrace = nodeTrace,
+      options?: object
+    ) {
+      super(testSvcServiceDefinition, address, credentials, trace, options);
+    }
     public foo(req: FooRequest, metadata?: grpcts.Metadata) {
       return super.makeUnaryRequest<FooRequest, BarResponse>(
         'foo',

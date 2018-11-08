@@ -2,7 +2,7 @@ import * as grpc from 'grpc';
 import { ClientError } from './ClientError';
 import { toGRPCMetadata, Metadata } from './metadata';
 
-export interface Trace {
+export interface ClientTrace {
   getTraceContext: () => string;
   getTraceContextName: () => string;
 }
@@ -15,7 +15,7 @@ export class Client {
     definition: grpc.ServiceDefinition<any>,
     address: string,
     credentials: grpc.ChannelCredentials,
-    public readonly trace?: Trace,
+    public readonly trace?: ClientTrace,
     options?: object
   ) {
     const ClientClass = grpc.makeGenericClientConstructor(definition, '', {});
@@ -108,7 +108,7 @@ export class Client {
     return grpcMetadata;
   }
 
-  private addTraceMetadata(trace: Trace, grpcMetadata: grpc.Metadata) {
+  private addTraceMetadata(trace: ClientTrace, grpcMetadata: grpc.Metadata) {
     const traceId = trace.getTraceContext();
     if (traceId) {
       grpcMetadata.add(trace.getTraceContextName(), trace.getTraceContext());

@@ -36,7 +36,6 @@ let trace = {
 };
 
 const client = new FooTest.TestSvcClient(
-  FooTest.testSvcServiceDefinition,
   `0.0.0.0:${port}`,
   grpc.credentials.createInsecure(),
   trace
@@ -64,7 +63,7 @@ describe('Client', () => {
       });
 
       it('makes request', async () => {
-        expect(response).toEqual({ _result: 'ok' });
+        expect(response).toEqual({ result: 'ok' });
       });
 
       it('attaches traceId', async () => {
@@ -168,7 +167,7 @@ describe('Client', () => {
       });
 
       it('calls correctly', () => {
-        expect(response).toEqual({ _result: '37' });
+        expect(response).toEqual({ result: '37' });
       });
 
       it('attaches traceId', async () => {

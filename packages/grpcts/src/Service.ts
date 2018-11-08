@@ -26,15 +26,23 @@ export interface Trace {
   start: (traceId?: string) => void;
 }
 
+function replacer(key: string, value: any) {
+  if (key === 'stack') {
+    return;
+  }
+  if (value instanceof Error) {
+    const error = Object.getOwnPropertyNames(value).reduce(
+      (acc, key: string) => ({ ...acc, [key]: (value as any)[key] }),
+      {}
+    );
+    return error;
+  }
+  return value;
+}
+
 const handleError = (e: Error, callback: grpc.sendUnaryData<any>) => {
   const metadata = new grpc.Metadata();
-  metadata.set(
-    'error',
-    JSON.stringify(
-      e,
-      Object.getOwnPropertyNames(e).filter(prop => prop !== 'stack')
-    )
-  );
+  metadata.set('error', JSON.stringify(e, replacer));
   callback(
     {
       code: grpc.status.UNKNOWN,

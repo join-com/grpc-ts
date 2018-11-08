@@ -1,4 +1,4 @@
-export { Client } from './Client';
+export { Client, ClientTrace } from './Client';
 export {
   Service,
   handleUnaryCallPromise,

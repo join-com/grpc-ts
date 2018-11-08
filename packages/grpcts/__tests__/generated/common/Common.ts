@@ -1,6 +1,8 @@
 // GENERATED CODE -- DO NOT EDIT!
 import { GoogleProtobuf } from '../google/protobuf/Empty';
 import * as protobufjs from 'protobufjs/minimal';
+// @ts-ignore ignored as it's generated and it's difficult to predict if logger is needed
+import { logger } from '@join-com/gcloud-logger-trace';
 export namespace FooCommon {
   export interface EmptyMessage {
     field?: GoogleProtobuf.Empty;

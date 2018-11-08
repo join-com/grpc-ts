@@ -11,7 +11,8 @@
     "test:watch": "yarn test --watch",
     "proto:generate": "protoc __tests__/proto/**/*.proto -I __tests__/proto --ts_out=proto_relative=../proto:/$PWD/__tests__/generated",
     "proto:replace_imports": "sed -i '' 's=@join-com/grpc-ts=../../../src=g' __tests__/generated/**/*.ts",
-    "proto:make": "yarn proto:generate && yarn proto:replace_imports",
+    "proto:pretty": "yarn prettier --write './__tests__/generated/**/*.ts'",
+    "proto:make": "yarn proto:generate && yarn proto:replace_imports && yarn proto:pretty",
     "prepublish": "yarn build"
   },
   "publishConfig": {
@@ -36,17 +37,18 @@
     "lib/"
   ],
   "devDependencies": {
-    "@types/jest": "^23.3.4",
-    "@types/node": "^10.11.5",
+    "@join-com/node-trace": "^0.1.5",
+    "@types/jest": "^23.3.9",
+    "@types/node": "^10.12.3",
     "jest": "^23.6.0",
     "jest-cli": "^23.6.0",
     "jest-watch-typeahead": "^0.2.0",
-    "prettier": "^1.14.3",
+    "prettier": "^1.15.1",
     "protobufjs": "^6.8.8",
     "ts-jest": "^23.10.4",
-    "typescript": "^3.1.1"
+    "typescript": "^3.1.6"
   },
   "dependencies": {
-    "grpc": "^1.15.1"
+    "grpc": "^1.16.0"
   }
 }

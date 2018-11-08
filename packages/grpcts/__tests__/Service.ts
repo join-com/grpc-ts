@@ -106,10 +106,10 @@ describe('Service', () => {
             expect(logger.info).toHaveBeenCalledWith(
               'GRPC request /TestSvc/Foo',
               {
-                _id: 11,
-                _name: ['john', 'doe'],
-                _password: 'qwerty',
-                _empty: {}
+                id: 11,
+                name: ['john', 'doe'],
+                password: 'qwerty',
+                empty: {}
               }
             );
             expect(logger.info).toHaveBeenCalledWith(
