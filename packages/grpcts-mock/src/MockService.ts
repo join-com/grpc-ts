@@ -1,4 +1,4 @@
-import { Service } from '@join-com/grpc-ts';
+import { Service, Implementations } from '@join-com/grpc-ts';
 import jestMock from 'jest-mock';
 import * as grpc from 'grpc';
 import 'jest';
@@ -9,11 +9,11 @@ export interface MethodMock<T> extends jest.Mock<T> {
 
 export type MockImplementation<T> = { [P in keyof T]: MethodMock<T[keyof T]> };
 
-interface ServiceClass<T> {
+interface ServiceClass<T extends Implementations> {
   new (implementations: T): Service<T>;
 }
 
-export class MockService<T extends any> {
+export class MockService<T extends Implementations> {
   public mocks: MockImplementation<T>;
   private wrappers: grpc.UntypedServiceImplementation = {};
   public service: Service<T>;
@@ -40,7 +40,7 @@ export class MockService<T extends any> {
   }
 
   public wrappedImplementations(): grpc.UntypedServiceImplementation {
-    return this.service.wrappedImplementations();
+    return this.service.implementations;
   }
 
   public allMocksResetOrigin() {
