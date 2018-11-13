@@ -1,7 +1,7 @@
 {
-  "name": "@join-com/grpc-ts",
+  "name": "@join-com/grpcts-health-check",
   "version": "1.0.0-4",
-  "description": "grpc typescript wrapper",
+  "description": "health check server and client for grpcts",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "scripts": {
@@ -9,10 +9,9 @@
     "tsc:check": "tsc --noEmit",
     "test": "jest",
     "test:watch": "yarn test --watch",
-    "proto:generate": "protoc __tests__/proto/**/*.proto -I __tests__/proto --ts_out=/$PWD/__tests__/generated",
-    "proto:replace_imports": "sed -i '' 's=@join-com/grpc-ts=../../../src=g' __tests__/generated/**/*.ts",
-    "proto:pretty": "yarn prettier --write './__tests__/generated/**/*.ts'",
-    "proto:build": "yarn proto:generate && yarn proto:replace_imports && yarn proto:pretty",
+    "proto:generate": "protoc ./proto/*.proto -I ./proto --ts_out=/$PWD/src/generated",
+    "proto:pretty": "yarn prettier --write './src/generated/**/*.ts'",
+    "proto:build": "yarn proto:generate && yarn proto:pretty",
     "prepublish": "yarn build"
   },
   "publishConfig": {
@@ -31,24 +30,26 @@
   "keywords": [
     "grpc",
     "protobuf",
-    "typescript"
+    "typescript",
+    "health check"
   ],
   "files": [
     "lib/"
   ],
   "devDependencies": {
-    "@join-com/node-trace": "^0.1.5",
     "@types/jest": "^23.3.9",
     "@types/node": "^10.12.3",
     "jest": "^23.6.0",
     "jest-cli": "^23.6.0",
     "jest-watch-typeahead": "^0.2.0",
     "prettier": "^1.15.1",
-    "protobufjs": "^6.8.8",
     "ts-jest": "^23.10.4",
     "typescript": "^3.1.6"
   },
   "dependencies": {
-    "grpc": "^1.16.0"
+    "@join-com/grpc-ts": "^1.0.0-4",
+    "@join-com/node-trace": "^0.1.5",
+    "grpc": "^1.16.0",
+    "protobufjs": "^6.8.8"
   }
 }

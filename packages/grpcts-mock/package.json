@@ -1,6 +1,6 @@
 {
   "name": "@join-com/grpc-ts-mock",
-  "version": "1.0.0-3",
+  "version": "1.0.0-4",
   "description": "grpc mock services",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
@@ -67,7 +67,6 @@
     "typescript": "^2.9.2"
   },
   "dependencies": {
-    "@join-com/grpc-ts": "^0.1.21",
-    "jest-mock": "^23.2.0"
+    "@join-com/grpc-ts": "^1.0.0-4"
   }
 }
