@@ -14,7 +14,7 @@ export class Client {
   constructor(
     definition: grpc.ServiceDefinition<any>,
     address: string,
-    credentials: grpc.ChannelCredentials,
+    credentials: grpc.ChannelCredentials = grpc.credentials.createInsecure(),
     public readonly trace?: ClientTrace,
     options?: object
   ) {

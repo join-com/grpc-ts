@@ -14,7 +14,7 @@ export class Server {
   public port?: number;
 
   constructor(
-    private readonly credentials: grpc.ServerCredentials,
+    private readonly credentials: grpc.ServerCredentials = grpc.ServerCredentials.createInsecure(),
     private readonly logger?: Logger
   ) {
     this.server = new grpc.Server();
