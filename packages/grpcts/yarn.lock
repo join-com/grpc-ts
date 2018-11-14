@@ -1303,9 +1303,9 @@ growly@^1.3.0:
   version "1.3.0"
   resolved "https://registry.npmjs.org/growly/-/growly-1.3.0.tgz#f10748cbe76af964b7c96c93c6bcc28af120c081"
 
-grpc@^1.13.0-pre1:
-  version "1.13.0-pre1"
-  resolved "https://registry.npmjs.org/grpc/-/grpc-1.13.0-pre1.tgz#35eca62f4297f3886d256eeccacfa93cd65f6c73"
+grpc@~1.16.0:
+  version "1.16.0"
+  resolved "https://registry.npmjs.org/grpc/-/grpc-1.16.0.tgz#cdf56d6ede2f1b6ab5224ad467cb22e1b3ec36fc"
   dependencies:
     lodash "^4.17.5"
     nan "^2.0.0"

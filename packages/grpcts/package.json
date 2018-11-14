@@ -1,6 +1,6 @@
 {
   "name": "@join-com/grpc-ts",
-  "version": "0.1.21",
+  "version": "0.1.22",
   "description": "grpc typescript wrapper",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
@@ -71,7 +71,7 @@
     "@join-com/gcloud-logger-trace": "^0.1.5",
     "@join-com/node-trace": "^0.1.5",
     "@join-com/protobufjs-wrappers": "^6.8.7",
-    "grpc": "^1.13.0-pre1",
+    "grpc": "~1.16.0",
     "lodash": "^4.17.10"
   }
 }
