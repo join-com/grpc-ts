@@ -56,16 +56,26 @@ const logging = (
   logger: Logger,
   definition: grpc.MethodDefinition<any, any>,
   call: any,
-  result: any
+  result?: any
 ) => {
   const logData: { request?: any; response?: any; path: string } = {
     path: definition.path
   };
   logData.request = !definition.requestStream ? call.request : 'STREAM';
-  if (!definition.responseStream) {
-    logData.response = result;
-  }
+  logData.response = !definition.responseStream ? result : 'STREAM';
   logger.info(`GRPC ${logData.path}`, logData);
+};
+
+const otherImplementation = <T>(
+  implementation: handleCall<any, any>,
+  definition: grpc.MethodDefinition<any, any>,
+  logger?: Logger
+) => async (call: T, ...args: any[]) => {
+  if (logger) {
+    logging(logger, definition, call);
+  }
+
+  (implementation as any)(call, ...args);
 };
 
 const callbackImplementation = <T>(
@@ -141,24 +151,24 @@ export class Service<I extends Implementations> {
 
         const hasCallback = implementation.length === 2;
 
-        if (isClientStream && !hasCallback) {
-          newImplementation = promiseImplementation<
-            grpc.ServerReadableStream<any>
-          >(implementation, this.serviceDefinition[name], this.logger);
-        } else if (isUnary && !hasCallback) {
-          newImplementation = promiseImplementation<grpc.ServerUnaryCall<any>>(
+        if ((isClientStream || isUnary) && !hasCallback) {
+          newImplementation = promiseImplementation<any>(
             implementation,
             this.serviceDefinition[name],
             this.logger
           );
         } else if (!this.serviceDefinition[name].responseStream) {
-          newImplementation = callbackImplementation<grpc.ServerUnaryCall<any>>(
+          newImplementation = callbackImplementation<any>(
             implementation,
             this.serviceDefinition[name],
             this.logger
           );
         } else {
-          newImplementation = implementation;
+          newImplementation = otherImplementation<any>(
+            implementation,
+            this.serviceDefinition[name],
+            this.logger
+          );
         }
         return {
           ...acc,

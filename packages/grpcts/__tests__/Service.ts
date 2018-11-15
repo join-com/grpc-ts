@@ -415,6 +415,30 @@ describe('Service', () => {
       });
       stream.on('end', done);
     });
+
+    it('logs request and response', done => {
+      const stream = (client as any).fooServerStream({
+        id: 11,
+        name: ['Foo stream']
+      });
+      stream.on('data', (data: FooTest.BarResponse) => {
+        expect(data.result).toEqual('Foo stream');
+        expect(logger.info).toHaveBeenCalledTimes(1);
+        expect(logger.info).toHaveBeenCalledWith(
+          'GRPC /TestSvc/FooServerStream',
+          {
+            path: '/TestSvc/FooServerStream',
+            request: {
+              id: 11,
+              name: ['Foo stream']
+            },
+            response: 'STREAM'
+          }
+        );
+      });
+
+      stream.on('end', done);
+    });
   });
 
   describe('bidi stream call', () => {
