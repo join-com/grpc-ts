@@ -52,27 +52,48 @@ const handleError = (e: Error, callback: grpc.sendUnaryData<any>) => {
   );
 };
 
-const wrapDefinition = (
+const logging = (
+  logger: Logger,
   definition: grpc.MethodDefinition<any, any>,
-  logger: Logger
-): grpc.MethodDefinition<any, any> => ({
-  ...definition,
-  requestDeserialize: argBuf => {
-    const request = definition.requestDeserialize(argBuf);
-    logger.info(`GRPC request ${definition.path}`, request);
-    return request;
-  },
-  responseSerialize: args => {
-    logger.info(`GRPC response ${definition.path}`, args);
-    return definition.responseSerialize(args);
+  call: any,
+  result: any
+) => {
+  const logData: { request?: any; response?: any; path: string } = {
+    path: definition.path
+  };
+  logData.request = !definition.requestStream ? call.request : 'STREAM';
+  if (!definition.responseStream) {
+    logData.response = result;
   }
-});
+  logger.info(`GRPC ${logData.path}`, logData);
+};
+
+const callbackImplementation = <T>(
+  implementation: handleCall<any, any>,
+  definition: grpc.MethodDefinition<any, any>,
+  logger?: Logger
+) => async (call: T, callback: grpc.sendUnaryData<any>) => {
+  const callbackWrap = (err: any, result: any) => {
+    if (logger) {
+      logging(logger, definition, call, result);
+    }
+    callback(err, result);
+  };
+  (implementation as any)(call, callbackWrap);
+};
 
 const promiseImplementation = <T>(
-  implementation: handleCall<any, any>
+  implementation: handleCall<any, any>,
+  definition: grpc.MethodDefinition<any, any>,
+  logger?: Logger
 ) => async (call: T, callback: grpc.sendUnaryData<any>) => {
   try {
     const result = await (implementation as any)(call);
+
+    if (logger) {
+      logging(logger, definition, call, result);
+    }
+
     callback(null, result);
   } catch (e) {
     handleError(e, callback);
@@ -91,35 +112,16 @@ const wrapImplementationWithTrace = (
 };
 
 export class Service<I extends Implementations> {
-  public readonly serviceDefinition: grpc.ServiceDefinition<any>;
   public readonly implementations: grpc.UntypedServiceImplementation;
   constructor(
-    rawDefinitions: grpc.ServiceDefinition<any>,
+    public readonly serviceDefinition: grpc.ServiceDefinition<any>,
     public readonly rawImplementations: I,
     private readonly logger?: Logger,
     private readonly trace?: Trace
   ) {
-    this.serviceDefinition = this.addLogging(rawDefinitions);
     this.implementations = this.convertToGrpcImplementation(
       this.rawImplementations
     );
-  }
-
-  private addLogging(definitions: grpc.ServiceDefinition<any>) {
-    const entries = Object.entries<grpc.MethodDefinition<any, any>>(
-      definitions
-    );
-    if (!this.logger) {
-      return definitions;
-    }
-    const loggedDefinitions = entries.reduce((acc, [name, definition]) => {
-      const loggedDefinition: grpc.MethodDefinition<any, any> = wrapDefinition(
-        definition,
-        this.logger!
-      );
-      return { ...acc, [name]: loggedDefinition };
-    }, {}) as grpc.ServiceDefinition<any>;
-    return loggedDefinitions;
   }
 
   private convertToGrpcImplementation(
@@ -142,10 +144,18 @@ export class Service<I extends Implementations> {
         if (isClientStream && !hasCallback) {
           newImplementation = promiseImplementation<
             grpc.ServerReadableStream<any>
-          >(implementation);
+          >(implementation, this.serviceDefinition[name], this.logger);
         } else if (isUnary && !hasCallback) {
           newImplementation = promiseImplementation<grpc.ServerUnaryCall<any>>(
-            implementation
+            implementation,
+            this.serviceDefinition[name],
+            this.logger
+          );
+        } else if (!this.serviceDefinition[name].responseStream) {
+          newImplementation = callbackImplementation<grpc.ServerUnaryCall<any>>(
+            implementation,
+            this.serviceDefinition[name],
+            this.logger
           );
         } else {
           newImplementation = implementation;

@@ -102,21 +102,17 @@ describe('Service', () => {
             empty: {}
           };
           (client as any)['foo'](req, () => {
-            expect(logger.info).toHaveBeenCalledTimes(2);
-            expect(logger.info).toHaveBeenCalledWith(
-              'GRPC request /TestSvc/Foo',
-              {
+            expect(logger.info).toHaveBeenCalledTimes(1);
+            expect(logger.info).toHaveBeenCalledWith('GRPC /TestSvc/Foo', {
+              path: '/TestSvc/Foo',
+              request: {
                 id: 11,
                 name: ['john', 'doe'],
                 password: 'qwerty',
                 empty: {}
-              }
-            );
-            expect(logger.info).toHaveBeenCalledWith(
-              'GRPC response /TestSvc/Foo',
-              { result: 'ok' }
-            );
-
+              },
+              response: { result: 'ok' }
+            });
             done();
           });
         });
@@ -191,6 +187,7 @@ describe('Service', () => {
       });
 
       beforeEach(() => {
+        logger.info.mockClear();
         fooMock.mockClear();
       });
 
@@ -211,6 +208,7 @@ describe('Service', () => {
             done();
           });
         });
+
         it('returns correct result', done => {
           (client as any)['foo'](
             {},
@@ -219,6 +217,29 @@ describe('Service', () => {
               done();
             }
           );
+        });
+
+        it('logs request and response', done => {
+          const req: FooTest.FooRequest = {
+            id: 11,
+            name: ['john', 'doe'],
+            password: 'qwerty',
+            empty: {}
+          };
+          (client as any)['foo'](req, () => {
+            expect(logger.info).toHaveBeenCalledTimes(1);
+            expect(logger.info).toHaveBeenCalledWith('GRPC /TestSvc/Foo', {
+              path: '/TestSvc/Foo',
+              request: {
+                id: 11,
+                name: ['john', 'doe'],
+                password: 'qwerty',
+                empty: {}
+              },
+              response: { result: 'ok' }
+            });
+            done();
+          });
         });
       });
     });
@@ -246,6 +267,7 @@ describe('Service', () => {
 
       beforeEach(() => {
         fooClientStreamMock.mockClear();
+        logger.info.mockClear();
       });
 
       describe('success', () => {
@@ -253,6 +275,26 @@ describe('Service', () => {
           const stream = (client as any).fooClientStream(
             (_: any, response: FooTest.BarResponse) => {
               expect(response.result).toEqual('fooClientStream -> 37');
+              done();
+              return;
+            }
+          );
+          stream.write({ id: 3, name: 'Bar' });
+          stream.write({ id: 7 });
+          stream.end();
+        });
+        it('logs request and response', done => {
+          const stream = (client as any).fooClientStream(
+            (_: any, response: FooTest.BarResponse) => {
+              expect(logger.info).toHaveBeenCalledTimes(1);
+              expect(logger.info).toHaveBeenCalledWith(
+                'GRPC /TestSvc/FooClientStream',
+                {
+                  path: '/TestSvc/FooClientStream',
+                  request: 'STREAM',
+                  response: { result: 'fooClientStream -> 37' }
+                }
+              );
               done();
               return;
             }
@@ -360,6 +402,7 @@ describe('Service', () => {
 
     beforeEach(() => {
       fooServerStreamMock.mockClear();
+      logger.info.mockClear();
     });
 
     it('calls correctly', done => {
