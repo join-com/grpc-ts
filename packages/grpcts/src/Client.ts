@@ -82,20 +82,39 @@ export class Client {
     return { call };
   }
 
+  protected assignError(
+    metadata: grpc.Metadata,
+    errorJSON: any,
+    code?: grpc.status
+  ) {
+    const error = new ClientError();
+    Object.assign(error, {
+      ...errorJSON,
+      grpcCode: code,
+      metadata: metadata
+    });
+    return error;
+  }
+
+  protected handleMetaError(metadata: grpc.Metadata, code?: grpc.status) {
+    const metadataError = metadata.get('error'); // deprecated, remove in next version
+    const metadataBinaryError = metadata.get('error-bin');
+    if (!metadataError.length && !metadataBinaryError.length) {
+      return;
+    }
+    const errorJSON = JSON.parse(
+      metadataBinaryError.length
+        ? metadataBinaryError[0].toString()
+        : (metadataError[0] as string)
+    );
+    return this.assignError(metadata, errorJSON, code);
+  }
+
   protected convertError(err: grpc.ServiceError) {
     const { metadata } = err;
     if (metadata) {
-      const metadataError = metadata.get('error');
-      if (metadataError && metadataError.length > 0) {
-        const errorJSON = JSON.parse(metadataError[0] as string);
-        const error = new ClientError();
-        Object.assign(error, {
-          ...errorJSON,
-          grpcCode: err.code,
-          metadata: err.metadata
-        });
-        return error;
-      }
+      const error = this.handleMetaError(metadata, err.code);
+      if (error) return error;
     }
     return Object.assign(err, { grpcCode: err.code });
   }

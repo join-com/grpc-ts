@@ -133,7 +133,7 @@ describe('Service', () => {
       describe('error', () => {
         beforeEach(() => {
           fooMock.mockImplementation(async () => {
-            const err: any = new Error('Something wrong');
+            const err: any = new Error('Something wrong æøå');
             err.nested = [
               {
                 nestedField: 'nested'
@@ -152,15 +152,19 @@ describe('Service', () => {
 
         it('returns error in metadata', done => {
           (client as any)['foo']({}, (error: any, _: FooTest.BarResponse) => {
-            const err = JSON.parse(error.metadata.get('error'));
-            expect(err.message).toEqual('Something wrong');
+            const err = JSON.parse(
+              error.metadata.get('error-bin').toString('utf8')
+            );
+            expect(err.message).toEqual('Something wrong æøå');
             done();
           });
         });
 
         it('converts nested propery', done => {
           (client as any)['foo']({}, (error: any, _: FooTest.BarResponse) => {
-            const err = JSON.parse(error.metadata.get('error'));
+            const err = JSON.parse(
+              error.metadata.get('error-bin').toString('utf8')
+            );
             expect(err.nested).toEqual([
               {
                 nestedField: 'nested'
@@ -285,7 +289,7 @@ describe('Service', () => {
         });
         it('logs request and response', done => {
           const stream = (client as any).fooClientStream(
-            (_: any, response: FooTest.BarResponse) => {
+            (_: any, __: FooTest.BarResponse) => {
               expect(logger.info).toHaveBeenCalledTimes(1);
               expect(logger.info).toHaveBeenCalledWith(
                 'GRPC /TestSvc/FooClientStream',
@@ -326,7 +330,9 @@ describe('Service', () => {
         it('returns error in metadata', done => {
           const stream = (client as any).fooClientStream(
             (error: any, _: FooTest.BarResponse) => {
-              const err = JSON.parse(error.metadata.get('error'));
+              const err = JSON.parse(
+                error.metadata.get('error-bin').toString('utf8')
+              );
               expect(err.message).toEqual('Something wrong');
               done();
             }

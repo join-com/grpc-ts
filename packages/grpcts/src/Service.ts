@@ -42,7 +42,7 @@ function replacer(key: string, value: any) {
 
 const handleError = (e: Error, callback: grpc.sendUnaryData<any>) => {
   const metadata = new grpc.Metadata();
-  metadata.set('error', JSON.stringify(e, replacer));
+  metadata.set('error-bin', Buffer.from(JSON.stringify(e, replacer)));
   callback(
     {
       code: grpc.status.UNKNOWN,

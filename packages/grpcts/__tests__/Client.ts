@@ -78,7 +78,7 @@ describe('Client', () => {
     });
 
     describe('error', () => {
-      describe('error key in metadata', () => {
+      describe('error key in metadata in string format', () => {
         beforeEach(() => {
           implementationsMock.foo.mockImplementation(
             (_: any, callback: grpc.sendUnaryData<any>) => {
@@ -90,6 +90,64 @@ describe('Client', () => {
                 JSON.stringify(
                   e,
                   Object.getOwnPropertyNames(e).filter(prop => prop !== 'stack')
+                )
+              );
+              metadata.set('foo', 'bar');
+              callback(
+                {
+                  code: grpc.status.UNKNOWN,
+                  metadata
+                } as any,
+                {}
+              );
+            }
+          );
+        });
+
+        let error: any;
+
+        beforeEach(async () => {
+          try {
+            const { res } = client.foo({});
+            await res;
+            expect('have not called').toEqual('have called');
+          } catch (e) {
+            error = e;
+          }
+        });
+
+        it('returns an error from metadata', () => {
+          expect(error.code).toEqual('MY_ERROR');
+          expect(error.message).toEqual('my error');
+          expect(error.grpcCode).toEqual(grpc.status.UNKNOWN);
+        });
+
+        it('attaches metadata', async () => {
+          expect(error.metadata.get('foo')).toEqual(['bar']);
+        });
+
+        it('attaches traceId', async () => {
+          const { metadata } = implementationsMock.foo.mock.calls[0][0];
+          expect(metadata.get(traceContextName)).toEqual([traceContext]);
+        });
+      });
+
+      describe('error key in metadata in binary', () => {
+        beforeEach(() => {
+          implementationsMock.foo.mockImplementation(
+            (_: any, callback: grpc.sendUnaryData<any>) => {
+              const e = new Error('my error') as any;
+              e.code = 'MY_ERROR';
+              const metadata = new grpc.Metadata();
+              metadata.set(
+                'error-bin',
+                Buffer.from(
+                  JSON.stringify(
+                    e,
+                    Object.getOwnPropertyNames(e).filter(
+                      prop => prop !== 'stack'
+                    )
+                  )
                 )
               );
               metadata.set('foo', 'bar');
