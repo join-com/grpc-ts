@@ -1,6 +1,6 @@
 {
   "name": "@join-com/grpc-ts-mock",
-  "version": "1.0.0-8",
+  "version": "1.1.0-pre1",
   "description": "grpc mock services",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
@@ -58,15 +58,15 @@
     ]
   },
   "devDependencies": {
-    "@types/jest": "^23.1.6",
-    "grpc": "^1.13.0",
-    "jest": "^23.4.1",
-    "jest-cli": "^23.1.0",
-    "jest-watch-typeahead": "^0.1.0",
-    "ts-jest": "^22.4.6",
-    "typescript": "^2.9.2"
+    "@types/jest": "^23.3.10",
+    "grpc": "^1.17.0-pre1",
+    "jest": "^23.6.0",
+    "jest-cli": "^23.6.0",
+    "jest-watch-typeahead": "^0.2.0",
+    "ts-jest": "^23.10.5",
+    "typescript": "^3.2.1"
   },
   "dependencies": {
-    "@join-com/grpc-ts": "^1.0.0-8"
+    "@join-com/grpc-ts": "^1.1.0-pre1"
   }
 }
