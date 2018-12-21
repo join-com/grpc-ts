@@ -58,11 +58,21 @@ const logging = (
   call: any,
   result?: any
 ) => {
-  const logData: { request?: any; response?: any; path: string } = {
+  const logData: {
+    request?: any;
+    response?: any;
+    error?: any;
+    path: string;
+  } = {
     path: definition.path
   };
   logData.request = !definition.requestStream ? call.request : 'STREAM';
-  logData.response = !definition.responseStream ? result : 'STREAM';
+  const data = !definition.responseStream ? result : 'STREAM';
+  if (result instanceof Error) {
+    logData.error = data;
+  } else {
+    logData.response = data;
+  }
   logger.info(`GRPC ${logData.path}`, logData);
 };
 
@@ -106,6 +116,9 @@ const promiseImplementation = <T>(
 
     callback(null, result);
   } catch (e) {
+    if (logger) {
+      logging(logger, definition, call, e);
+    }
     handleError(e, callback);
   }
 };
