@@ -131,15 +131,15 @@ describe('Service', () => {
       });
 
       describe('error', () => {
+        const serverError: any = new Error('Something wrong æøå');
+        serverError.nested = [
+          {
+            nestedField: 'nested'
+          }
+        ];
         beforeEach(() => {
           fooMock.mockImplementation(async () => {
-            const err: any = new Error('Something wrong æøå');
-            err.nested = [
-              {
-                nestedField: 'nested'
-              }
-            ];
-            throw err;
+            throw serverError;
           });
         });
 
@@ -170,6 +170,18 @@ describe('Service', () => {
                 nestedField: 'nested'
               }
             ]);
+            done();
+          });
+        });
+
+        it('logs response', done => {
+          (client as any)['foo']({}, (__: any, _: FooTest.BarResponse) => {
+            expect(logger.info).toHaveBeenCalledTimes(1);
+            expect(logger.info).toHaveBeenCalledWith('GRPC /TestSvc/Foo', {
+              path: '/TestSvc/Foo',
+              request: {},
+              error: serverError
+            });
             done();
           });
         });
@@ -310,9 +322,10 @@ describe('Service', () => {
       });
 
       describe('error', () => {
+        const streamError = new Error('Something wrong');
         beforeEach(() => {
           fooClientStreamMock.mockImplementation(async () => {
-            throw new Error('Something wrong');
+            throw streamError;
           });
         });
 
@@ -334,6 +347,25 @@ describe('Service', () => {
                 error.metadata.get('error-bin').toString('utf8')
               );
               expect(err.message).toEqual('Something wrong');
+              done();
+            }
+          );
+          stream.write({ id: 3, name: 'Bar' });
+          stream.end();
+        });
+
+        it('logs errors', done => {
+          const stream = (client as any).fooClientStream(
+            (__: any, _: FooTest.BarResponse) => {
+              expect(logger.info).toHaveBeenCalledTimes(1);
+              expect(logger.info).toHaveBeenCalledWith(
+                'GRPC /TestSvc/FooClientStream',
+                {
+                  path: '/TestSvc/FooClientStream',
+                  request: 'STREAM',
+                  error: streamError
+                }
+              );
               done();
             }
           );

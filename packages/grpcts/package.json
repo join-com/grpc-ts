@@ -39,16 +39,16 @@
   "devDependencies": {
     "@join-com/node-trace": "^0.1.5",
     "@types/jest": "^23.3.10",
-    "@types/node": "^10.12.10",
+    "@types/node": "^10.12.18",
     "jest": "^23.6.0",
     "jest-cli": "^23.6.0",
     "jest-watch-typeahead": "^0.2.0",
-    "prettier": "^1.15.2",
+    "prettier": "^1.15.3",
     "protobufjs": "^6.8.8",
     "ts-jest": "^23.10.5",
-    "typescript": "^3.2.1"
+    "typescript": "^3.2.2"
   },
   "dependencies": {
-    "grpc": "^1.16.0"
+    "grpc": "^1.17.0"
   }
 }
