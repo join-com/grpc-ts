@@ -1,6 +1,6 @@
 {
   "name": "@join-com/grpc-ts",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "grpc typescript wrapper",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
@@ -38,17 +38,17 @@
   ],
   "devDependencies": {
     "@join-com/node-trace": "^0.1.5",
-    "@types/jest": "^24.0.11",
-    "@types/node": "^11.13.0",
-    "jest": "^24.7.1",
-    "jest-cli": "^24.7.1",
-    "jest-watch-typeahead": "^0.3.0",
-    "prettier": "^1.16.4",
+    "@types/jest": "^24.0.13",
+    "@types/node": "^12.0.3",
+    "jest": "^24.8.0",
+    "jest-cli": "^24.8.0",
+    "jest-watch-typeahead": "^0.3.1",
+    "prettier": "^1.17.1",
     "protobufjs": "^6.8.8",
     "ts-jest": "^24.0.2",
-    "typescript": "^3.4.2"
+    "typescript": "^3.4.5"
   },
   "dependencies": {
-    "grpc": "^1.19.0"
+    "grpc": "^1.21.1"
   }
 }
