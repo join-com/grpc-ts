@@ -15,11 +15,11 @@
    "git add"
   ]
  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lerna run tsc:check && lint-staged"
-    }
-  },
+ "husky": {
+  "hooks": {
+   "pre-commit": "lerna run tsc:check && lint-staged"
+  }
+ },
  "devDependencies": {
   "husky": "^2.3.0",
   "lerna": "^3.14.1",
