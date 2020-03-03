@@ -4,20 +4,19 @@ import * as protobufjs from 'protobufjs/minimal';
 // @ts-ignore ignored as it's generated and it's difficult to predict if logger is needed
 import { logger } from '@join-com/gcloud-logger-trace';
 
-import * as grpc from 'grpc';
 import * as grpcts from '../../../src';
 import * as nodeTrace from '@join-com/node-trace';
 
 export namespace FooTest {
-  export interface FooRequest {
+  export interface IFooRequest {
     id?: number;
     name?: string[];
     password?: string;
     token?: string;
-    empty?: FooCommon.EmptyMessage;
+    empty?: FooCommon.IEmptyMessage;
   }
 
-  export class FooRequestMsg implements FooRequest {
+  export class FooRequest implements IFooRequest {
     public static decode(
       inReader: Uint8Array | protobufjs.Reader,
       length?: number
@@ -26,7 +25,7 @@ export namespace FooTest {
         ? protobufjs.Reader.create(inReader)
         : inReader;
       const end = length === undefined ? reader.len : reader.pos + length;
-      const message = new FooRequestMsg();
+      const message = new FooRequest();
       while (reader.pos < end) {
         const tag = reader.uint32();
         switch (tag >>> 3) {
@@ -46,7 +45,7 @@ export namespace FooTest {
             message.token = reader.string();
             break;
           case 5:
-            message.empty = FooCommon.EmptyMessageMsg.decode(
+            message.empty = FooCommon.EmptyMessage.decode(
               reader,
               reader.uint32()
             );
@@ -62,8 +61,8 @@ export namespace FooTest {
     public name?: string[];
     public password?: string;
     public token?: string;
-    public empty?: FooCommon.EmptyMessage;
-    constructor(attrs?: FooRequest) {
+    public empty?: FooCommon.IEmptyMessage;
+    constructor(attrs?: IFooRequest) {
       Object.assign(this, attrs);
     }
     public encode(writer: protobufjs.Writer = protobufjs.Writer.create()) {
@@ -82,18 +81,18 @@ export namespace FooTest {
         writer.uint32(34).string(this.token);
       }
       if (this.empty != null) {
-        const msg = new FooCommon.EmptyMessageMsg(this.empty);
+        const msg = new FooCommon.EmptyMessage(this.empty);
         msg.encode(writer.uint32(42).fork()).ldelim();
       }
       return writer;
     }
   }
 
-  export interface StreamBarResponse {
+  export interface IStreamBarResponse {
     result?: string;
   }
 
-  export class StreamBarResponseMsg implements StreamBarResponse {
+  export class StreamBarResponse implements IStreamBarResponse {
     public static decode(
       inReader: Uint8Array | protobufjs.Reader,
       length?: number
@@ -102,7 +101,7 @@ export namespace FooTest {
         ? protobufjs.Reader.create(inReader)
         : inReader;
       const end = length === undefined ? reader.len : reader.pos + length;
-      const message = new StreamBarResponseMsg();
+      const message = new StreamBarResponse();
       while (reader.pos < end) {
         const tag = reader.uint32();
         switch (tag >>> 3) {
@@ -117,7 +116,7 @@ export namespace FooTest {
       return message;
     }
     public result?: string;
-    constructor(attrs?: StreamBarResponse) {
+    constructor(attrs?: IStreamBarResponse) {
       Object.assign(this, attrs);
     }
     public encode(writer: protobufjs.Writer = protobufjs.Writer.create()) {
@@ -128,11 +127,11 @@ export namespace FooTest {
     }
   }
 
-  export interface BarResponse {
+  export interface IBarResponse {
     result?: string;
   }
 
-  export class BarResponseMsg implements BarResponse {
+  export class BarResponse implements IBarResponse {
     public static decode(
       inReader: Uint8Array | protobufjs.Reader,
       length?: number
@@ -141,7 +140,7 @@ export namespace FooTest {
         ? protobufjs.Reader.create(inReader)
         : inReader;
       const end = length === undefined ? reader.len : reader.pos + length;
-      const message = new BarResponseMsg();
+      const message = new BarResponse();
       while (reader.pos < end) {
         const tag = reader.uint32();
         switch (tag >>> 3) {
@@ -156,7 +155,7 @@ export namespace FooTest {
       return message;
     }
     public result?: string;
-    constructor(attrs?: BarResponse) {
+    constructor(attrs?: IBarResponse) {
       Object.assign(this, attrs);
     }
     public encode(writer: protobufjs.Writer = protobufjs.Writer.create()) {
@@ -172,108 +171,106 @@ export namespace FooTest {
       path: '/TestSvc/Foo',
       requestStream: false,
       responseStream: false,
-      requestType: FooRequestMsg,
-      responseType: BarResponseMsg,
-      requestSerialize: (args: FooRequest) =>
-        new FooRequestMsg(args).encode().finish() as Buffer,
-      requestDeserialize: (argBuf: Buffer) => FooRequestMsg.decode(argBuf),
-      responseSerialize: (args: BarResponse) =>
-        new BarResponseMsg(args).encode().finish() as Buffer,
-      responseDeserialize: (argBuf: Buffer) => BarResponseMsg.decode(argBuf)
+      requestType: FooRequest,
+      responseType: BarResponse,
+      requestSerialize: (args: IFooRequest) =>
+        new FooRequest(args).encode().finish() as Buffer,
+      requestDeserialize: (argBuf: Buffer) => FooRequest.decode(argBuf),
+      responseSerialize: (args: IBarResponse) =>
+        new BarResponse(args).encode().finish() as Buffer,
+      responseDeserialize: (argBuf: Buffer) => BarResponse.decode(argBuf)
     },
     fooServerStream: {
       path: '/TestSvc/FooServerStream',
       requestStream: false,
       responseStream: true,
-      requestType: FooRequestMsg,
-      responseType: StreamBarResponseMsg,
-      requestSerialize: (args: FooRequest) =>
-        new FooRequestMsg(args).encode().finish() as Buffer,
-      requestDeserialize: (argBuf: Buffer) => FooRequestMsg.decode(argBuf),
-      responseSerialize: (args: StreamBarResponse) =>
-        new StreamBarResponseMsg(args).encode().finish() as Buffer,
-      responseDeserialize: (argBuf: Buffer) =>
-        StreamBarResponseMsg.decode(argBuf)
+      requestType: FooRequest,
+      responseType: StreamBarResponse,
+      requestSerialize: (args: IFooRequest) =>
+        new FooRequest(args).encode().finish() as Buffer,
+      requestDeserialize: (argBuf: Buffer) => FooRequest.decode(argBuf),
+      responseSerialize: (args: IStreamBarResponse) =>
+        new StreamBarResponse(args).encode().finish() as Buffer,
+      responseDeserialize: (argBuf: Buffer) => StreamBarResponse.decode(argBuf)
     },
     fooClientStream: {
       path: '/TestSvc/FooClientStream',
       requestStream: true,
       responseStream: false,
-      requestType: FooRequestMsg,
-      responseType: BarResponseMsg,
-      requestSerialize: (args: FooRequest) =>
-        new FooRequestMsg(args).encode().finish() as Buffer,
-      requestDeserialize: (argBuf: Buffer) => FooRequestMsg.decode(argBuf),
-      responseSerialize: (args: BarResponse) =>
-        new BarResponseMsg(args).encode().finish() as Buffer,
-      responseDeserialize: (argBuf: Buffer) => BarResponseMsg.decode(argBuf)
+      requestType: FooRequest,
+      responseType: BarResponse,
+      requestSerialize: (args: IFooRequest) =>
+        new FooRequest(args).encode().finish() as Buffer,
+      requestDeserialize: (argBuf: Buffer) => FooRequest.decode(argBuf),
+      responseSerialize: (args: IBarResponse) =>
+        new BarResponse(args).encode().finish() as Buffer,
+      responseDeserialize: (argBuf: Buffer) => BarResponse.decode(argBuf)
     },
     fooBidiStream: {
       path: '/TestSvc/FooBidiStream',
       requestStream: true,
       responseStream: true,
-      requestType: FooRequestMsg,
-      responseType: StreamBarResponseMsg,
-      requestSerialize: (args: FooRequest) =>
-        new FooRequestMsg(args).encode().finish() as Buffer,
-      requestDeserialize: (argBuf: Buffer) => FooRequestMsg.decode(argBuf),
-      responseSerialize: (args: StreamBarResponse) =>
-        new StreamBarResponseMsg(args).encode().finish() as Buffer,
-      responseDeserialize: (argBuf: Buffer) =>
-        StreamBarResponseMsg.decode(argBuf)
+      requestType: FooRequest,
+      responseType: StreamBarResponse,
+      requestSerialize: (args: IFooRequest) =>
+        new FooRequest(args).encode().finish() as Buffer,
+      requestDeserialize: (argBuf: Buffer) => FooRequest.decode(argBuf),
+      responseSerialize: (args: IStreamBarResponse) =>
+        new StreamBarResponse(args).encode().finish() as Buffer,
+      responseDeserialize: (argBuf: Buffer) => StreamBarResponse.decode(argBuf)
     }
   };
 
-  export interface TestSvcImplementation extends grpcts.Implementations {
-    foo(call: grpc.ServerUnaryCall<FooRequest>): Promise<BarResponse>;
+  export interface ITestSvcImplementation extends grpcts.Implementations {
+    foo(call: grpcts.grpc.ServerUnaryCall<IFooRequest>): Promise<IBarResponse>;
     foo(
-      call: grpc.ServerUnaryCall<FooRequest>,
-      callback: grpc.sendUnaryData<BarResponse>
+      call: grpcts.grpc.ServerUnaryCall<IFooRequest>,
+      callback: grpcts.grpc.sendUnaryData<IBarResponse>
     ): void;
-    fooServerStream(call: grpc.ServerWriteableStream<FooRequest>): void;
+    fooServerStream(call: grpcts.grpc.ServerWriteableStream<IFooRequest>): void;
     fooClientStream(
-      call: grpc.ServerReadableStream<FooRequest>
-    ): Promise<BarResponse>;
+      call: grpcts.grpc.ServerReadableStream<IFooRequest>
+    ): Promise<IBarResponse>;
     fooClientStream(
-      call: grpc.ServerReadableStream<FooRequest>,
-      callback: grpc.sendUnaryData<BarResponse>
+      call: grpcts.grpc.ServerReadableStream<IFooRequest>,
+      callback: grpcts.grpc.sendUnaryData<IBarResponse>
     ): void;
     fooBidiStream(
-      call: grpc.ServerDuplexStream<FooRequest, StreamBarResponse>
+      call: grpcts.grpc.ServerDuplexStream<IFooRequest, IStreamBarResponse>
     ): void;
   }
 
   export class TestSvcClient extends grpcts.Client {
     constructor(
       address: string,
-      credentials: grpc.ChannelCredentials,
+      credentials?: grpcts.grpc.ChannelCredentials,
       trace: grpcts.ClientTrace = nodeTrace,
       options?: object
     ) {
       super(testSvcServiceDefinition, address, credentials, trace, options);
     }
-    public foo(req: FooRequest, metadata?: grpcts.Metadata) {
-      return super.makeUnaryRequest<FooRequest, BarResponse>(
+    public foo(req: IFooRequest, metadata?: grpcts.Metadata) {
+      return super.makeUnaryRequest<IFooRequest, IBarResponse>(
         'foo',
         req,
         metadata
       );
     }
-    public fooServerStream(req: FooRequest, metadata?: grpcts.Metadata) {
-      return super.makeServerStreamRequest<FooRequest, StreamBarResponse>(
+    public fooServerStream(req: IFooRequest, metadata?: grpcts.Metadata) {
+      return super.makeServerStreamRequest<IFooRequest, IStreamBarResponse>(
         'fooServerStream',
         req,
         metadata
       );
     }
     public fooClientStream(metadata?: grpcts.Metadata) {
-      return super.makeClientStreamRequest<FooRequest, BarResponse>(
+      return super.makeClientStreamRequest<IFooRequest, IBarResponse>(
         'fooClientStream',
         metadata
       );
     }
     public fooBidiStream(metadata?: grpcts.Metadata) {
-      return super.makeBidiStreamRequest<FooRequest, StreamBarResponse>(
+      return super.makeBidiStreamRequest<IFooRequest, IStreamBarResponse>(
         'fooBidiStream',
         metadata
       );

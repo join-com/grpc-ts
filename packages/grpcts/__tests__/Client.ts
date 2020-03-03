@@ -56,7 +56,7 @@ describe('Client', () => {
 
   describe('unary call', () => {
     describe('success', () => {
-      let response: FooTest.BarResponse;
+      let response: FooTest.IBarResponse;
       beforeEach(async () => {
         const { res } = client.foo({}, { foo: 'bar' });
         response = await res;
@@ -215,7 +215,7 @@ describe('Client', () => {
 
   describe('client stream call', () => {
     describe('success', () => {
-      let response: FooTest.BarResponse;
+      let response: FooTest.IBarResponse;
       beforeEach(async () => {
         const { call, res } = client.fooClientStream({ foo: 'bar' });
         call.write({ id: 3, name: ['Bar'] });
