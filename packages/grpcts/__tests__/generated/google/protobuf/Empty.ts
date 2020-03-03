@@ -3,9 +3,9 @@ import * as protobufjs from 'protobufjs/minimal';
 // @ts-ignore ignored as it's generated and it's difficult to predict if logger is needed
 import { logger } from '@join-com/gcloud-logger-trace';
 export namespace GoogleProtobuf {
-  export interface Empty {}
+  export interface IEmpty {}
 
-  export class EmptyMsg implements Empty {
+  export class Empty implements IEmpty {
     public static decode(
       inReader: Uint8Array | protobufjs.Reader,
       length?: number
@@ -14,7 +14,7 @@ export namespace GoogleProtobuf {
         ? protobufjs.Reader.create(inReader)
         : inReader;
       const end = length === undefined ? reader.len : reader.pos + length;
-      const message = new EmptyMsg();
+      const message = new Empty();
       while (reader.pos < end) {
         const tag = reader.uint32();
         switch (tag >>> 3) {
@@ -25,7 +25,7 @@ export namespace GoogleProtobuf {
       }
       return message;
     }
-    constructor(attrs?: Empty) {
+    constructor(attrs?: IEmpty) {
       Object.assign(this, attrs);
     }
     public encode(writer: protobufjs.Writer = protobufjs.Writer.create()) {
