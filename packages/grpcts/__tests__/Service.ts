@@ -9,17 +9,25 @@ let logger = {
 };
 
 const traceContextName = 'trace-context-name';
-let trace: Trace = {
+const trace: Trace = {
   getTraceContextName: () => traceContextName,
   start: jest.fn()
 };
 
-const startService = (implementations: FooTest.TestSvcImplementation) => {
-  const service = new Service<FooTest.TestSvcImplementation>(
+const latency = 200;
+const latencyTimerMock = {
+  start: () => ({
+    getValue: () => latency
+  })
+};
+
+const startService = (implementations: FooTest.ITestSvcImplementation) => {
+  const service = new Service<FooTest.ITestSvcImplementation>(
     FooTest.testSvcServiceDefinition,
     implementations,
     logger,
-    trace
+    trace,
+    latencyTimerMock
   );
 
   server = new grpc.Server();
@@ -95,7 +103,7 @@ describe('Service', () => {
         });
 
         it('logs request and response', done => {
-          const req: FooTest.FooRequest = {
+          const req: FooTest.IFooRequest = {
             id: 11,
             name: ['john', 'doe'],
             password: 'qwerty',
@@ -105,6 +113,8 @@ describe('Service', () => {
             expect(logger.info).toHaveBeenCalledTimes(1);
             expect(logger.info).toHaveBeenCalledWith('GRPC /TestSvc/Foo', {
               path: '/TestSvc/Foo',
+              emitter: 'service',
+              latency,
               request: {
                 id: 11,
                 name: ['john', 'doe'],
@@ -180,7 +190,9 @@ describe('Service', () => {
             expect(logger.info).toHaveBeenCalledWith('GRPC /TestSvc/Foo', {
               path: '/TestSvc/Foo',
               request: {},
-              error: serverError
+              error: serverError,
+              emitter: 'service',
+              latency
             });
             done();
           });
@@ -209,7 +221,7 @@ describe('Service', () => {
 
       describe('success', () => {
         it('calls with correct attributes', done => {
-          const req: FooTest.FooRequest = {
+          const req: FooTest.IFooRequest = {
             id: 11,
             name: ['john', 'doe'],
             password: 'qwerty',
@@ -228,7 +240,7 @@ describe('Service', () => {
         it('returns correct result', done => {
           (client as any)['foo'](
             {},
-            (_: any, response: FooTest.BarResponse) => {
+            (_: any, response: FooTest.IBarResponse) => {
               expect(response.result).toEqual('ok');
               done();
             }
@@ -236,7 +248,7 @@ describe('Service', () => {
         });
 
         it('logs request and response', done => {
-          const req: FooTest.FooRequest = {
+          const req: FooTest.IFooRequest = {
             id: 11,
             name: ['john', 'doe'],
             password: 'qwerty',
@@ -252,7 +264,9 @@ describe('Service', () => {
                 password: 'qwerty',
                 empty: {}
               },
-              response: { result: 'ok' }
+              response: { result: 'ok' },
+              emitter: 'service',
+              latency
             });
             done();
           });
@@ -308,7 +322,9 @@ describe('Service', () => {
                 {
                   path: '/TestSvc/FooClientStream',
                   request: 'STREAM',
-                  response: { result: 'fooClientStream -> 37' }
+                  response: { result: 'fooClientStream -> 37' },
+                  emitter: 'service',
+                  latency
                 }
               );
               done();
@@ -363,7 +379,9 @@ describe('Service', () => {
                 {
                   path: '/TestSvc/FooClientStream',
                   request: 'STREAM',
-                  error: streamError
+                  error: streamError,
+                  emitter: 'service',
+                  latency
                 }
               );
               done();
@@ -395,7 +413,7 @@ describe('Service', () => {
 
       describe('success', () => {
         it('calls with correct attributes', done => {
-          const req: FooTest.FooRequest = {
+          const req: FooTest.IFooRequest = {
             id: 11,
             name: ['john', 'doe'],
             password: 'qwerty',
@@ -470,7 +488,8 @@ describe('Service', () => {
               id: 11,
               name: ['Foo stream']
             },
-            response: 'STREAM'
+            response: 'STREAM',
+            emitter: 'service'
           }
         );
       });
@@ -481,11 +500,13 @@ describe('Service', () => {
 
   describe('bidi stream call', () => {
     const fooServerStreamMock = jest.fn(async call => {
-      for await (const reqRaw of call as any) {
-        const req: FooTest.FooRequest = reqRaw;
-        call.write({ result: req.name![0] });
-      }
-      call.end();
+      call.on('data', data => {
+        call.write({ result: data.name![0] });
+      });
+
+      call.on('end', () => {
+        call.end();
+      });
     });
 
     beforeAll(() => {
@@ -505,10 +526,13 @@ describe('Service', () => {
       const stream = (client as any).fooBidiStream();
       stream.write({ id: 3, name: ['Bar'] });
       stream.end();
+
       stream.on('data', (data: FooTest.BarResponse) => {
         expect(data.result).toEqual('Bar');
       });
-      stream.on('end', done);
+      stream.on('end', () => {
+        done();
+      });
     });
   });
 });

@@ -245,9 +245,17 @@ export namespace FooTest {
       address: string,
       credentials?: grpcts.grpc.ChannelCredentials,
       trace: grpcts.ClientTrace = nodeTrace,
-      options?: object
+      options?: object,
+      logger?: grpcts.Logger
     ) {
-      super(testSvcServiceDefinition, address, credentials, trace, options);
+      super(
+        testSvcServiceDefinition,
+        address,
+        credentials,
+        trace,
+        options,
+        logger
+      );
     }
     public foo(req: IFooRequest, metadata?: grpcts.Metadata) {
       return super.makeUnaryRequest<IFooRequest, IBarResponse>(

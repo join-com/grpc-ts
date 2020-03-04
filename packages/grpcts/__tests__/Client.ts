@@ -16,11 +16,13 @@ const implementationsMock = {
     call.on('end', () => callback(null, { result }));
   }),
   fooBidiStream: jest.fn(async call => {
-    for await (const reqRaw of call as any) {
-      const req: FooTest.FooRequest = reqRaw;
-      call.write({ result: `${req.id}` });
-    }
-    call.end();
+    call
+      .on('data', data => {
+        call.write({ result: `${data.id}` });
+      })
+      .on('end', () => {
+        call.end();
+      });
   })
 };
 server.addService(FooTest.testSvcServiceDefinition, implementationsMock);
@@ -35,10 +37,16 @@ let trace = {
   getTraceContext: () => traceContext
 };
 
+let loggerMock = {
+  info: jest.fn()
+};
+
 const client = new FooTest.TestSvcClient(
   `0.0.0.0:${port}`,
   grpc.credentials.createInsecure(),
-  trace
+  trace,
+  undefined,
+  loggerMock
 );
 
 describe('Client', () => {
@@ -54,16 +62,36 @@ describe('Client', () => {
     implementationsMock.fooBidiStream.mockClear();
   });
 
+  afterEach(() => {
+    loggerMock.info.mockReset();
+  });
+
   describe('unary call', () => {
     describe('success', () => {
+      const request: FooTest.IFooRequest = {
+        id: 1
+      };
+
       let response: FooTest.IBarResponse;
+
       beforeEach(async () => {
-        const { res } = client.foo({}, { foo: 'bar' });
+        const { res } = client.foo(request, { foo: 'bar' });
         response = await res;
       });
 
       it('makes request', async () => {
         expect(response).toEqual({ result: 'ok' });
+      });
+
+      it('logs request and response', done => {
+        expect(loggerMock.info).toHaveBeenCalledTimes(1);
+        expect(loggerMock.info).toHaveBeenCalledWith('GRPC /TestSvc/Foo', {
+          path: '/TestSvc/Foo',
+          emitter: 'client',
+          latency: expect.any(Number),
+          request
+        });
+        done();
       });
 
       it('attaches traceId', async () => {
@@ -352,11 +380,13 @@ describe('Client', () => {
 
   describe('bidi stream call', () => {
     let result: string = '';
+
     beforeEach(async () => {
       const { call } = client.fooBidiStream({ foo: 'bar' });
       call.write({ id: 3, name: ['Bar'] });
       call.write({ id: 7 });
       call.end();
+
       for await (const reqRaw of call as any) {
         const request: FooTest.BarResponse = reqRaw;
         result += request.result;
