@@ -1,4 +1,5 @@
 import * as grpc from 'grpc';
+import { ILatency, ILatencyTimer, LatencyTimer } from './LatencyTimer';
 
 export type handleUnaryCallPromise<RequestType, ResponseType> = (
   call: grpc.ServerUnaryCall<RequestType>
@@ -56,23 +57,20 @@ const logging = (
   logger: Logger,
   definition: grpc.MethodDefinition<any, any>,
   call: any,
-  result?: any
+  result?: any,
+  latency?: ILatency
 ) => {
-  const logData: {
-    request?: any;
-    response?: any;
-    error?: any;
-    path: string;
-  } = {
-    path: definition.path
+  const request = !definition.requestStream ? call.request : 'STREAM';
+  const response = !definition.responseStream ? result : 'STREAM';
+  const isError = result instanceof Error;
+  const logData = {
+    request,
+    [isError ? 'error' : 'response']: response,
+    path: definition.path,
+    emitter: 'service',
+    latency: latency?.getValue()
   };
-  logData.request = !definition.requestStream ? call.request : 'STREAM';
-  const data = !definition.responseStream ? result : 'STREAM';
-  if (result instanceof Error) {
-    logData.error = data;
-  } else {
-    logData.response = data;
-  }
+
   logger.info(`GRPC ${logData.path}`, logData);
 };
 
@@ -91,11 +89,13 @@ const otherImplementation = <T>(
 const callbackImplementation = <T>(
   implementation: handleCall<any, any>,
   definition: grpc.MethodDefinition<any, any>,
+  latencyTimer: ILatencyTimer,
   logger?: Logger
 ) => async (call: T, callback: grpc.sendUnaryData<any>) => {
+  const latency = latencyTimer.start();
   const callbackWrap = (err: any, result: any) => {
     if (logger) {
-      logging(logger, definition, call, result);
+      logging(logger, definition, call, result, latency);
     }
     callback(err, result);
   };
@@ -105,19 +105,21 @@ const callbackImplementation = <T>(
 const promiseImplementation = <T>(
   implementation: handleCall<any, any>,
   definition: grpc.MethodDefinition<any, any>,
+  latencyTimer: ILatencyTimer,
   logger?: Logger
 ) => async (call: T, callback: grpc.sendUnaryData<any>) => {
+  const latency = latencyTimer.start();
   try {
     const result = await (implementation as any)(call);
 
     if (logger) {
-      logging(logger, definition, call, result);
+      logging(logger, definition, call, result, latency);
     }
 
     callback(null, result);
   } catch (e) {
     if (logger) {
-      logging(logger, definition, call, e);
+      logging(logger, definition, call, e, latency);
     }
     handleError(e, callback);
   }
@@ -140,7 +142,8 @@ export class Service<I extends Implementations> {
     public readonly serviceDefinition: grpc.ServiceDefinition<any>,
     public readonly rawImplementations: I,
     private readonly logger?: Logger,
-    private readonly trace?: Trace
+    private readonly trace?: Trace,
+    private readonly latencyTimer: ILatencyTimer = new LatencyTimer()
   ) {
     this.implementations = this.convertToGrpcImplementation(
       this.rawImplementations
@@ -168,12 +171,14 @@ export class Service<I extends Implementations> {
           newImplementation = promiseImplementation<any>(
             implementation,
             this.serviceDefinition[name],
+            this.latencyTimer,
             this.logger
           );
         } else if (!this.serviceDefinition[name].responseStream) {
           newImplementation = callbackImplementation<any>(
             implementation,
             this.serviceDefinition[name],
+            this.latencyTimer,
             this.logger
           );
         } else {
