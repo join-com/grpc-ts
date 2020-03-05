@@ -45,12 +45,8 @@ export class Client {
         req,
         this.metadata(metadata),
         (err: grpc.ServiceError, res: ResponseType) => {
-          if (err) {
-            return reject(this.convertError(err));
-          }
-
           this.log(methodName, req, latency);
-          resolve(res);
+          return err ? reject(this.convertError(err)) : resolve(res);
         }
       );
     });

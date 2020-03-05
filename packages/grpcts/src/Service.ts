@@ -67,12 +67,9 @@ const logging = (
     request,
     [isError ? 'error' : 'response']: response,
     path: definition.path,
-    emitter: 'service'
+    emitter: 'service',
+    latency: latency?.getValue()
   };
-
-  if (latency) {
-    logData.latency = latency.getValue();
-  }
 
   logger.info(`GRPC ${logData.path}`, logData);
 };

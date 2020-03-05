@@ -13,7 +13,7 @@ export class LatencyTimer {
   }
 }
 
-class Latency {
+class Latency implements ILatency {
   constructor(readonly startDate: Date) {}
 
   public getValue(): number {
