@@ -111,18 +111,21 @@ describe('Service', () => {
           };
           (client as any)['foo'](req, () => {
             expect(logger.info).toHaveBeenCalledTimes(1);
-            expect(logger.info).toHaveBeenCalledWith('GRPC /TestSvc/Foo', {
-              path: '/TestSvc/Foo',
-              emitter: 'service',
-              latency,
-              request: {
-                id: 11,
-                name: ['john', 'doe'],
-                password: 'qwerty',
-                empty: {}
-              },
-              response: { result: 'ok' }
-            });
+            expect(logger.info).toHaveBeenCalledWith(
+              'GRPC service /TestSvc/Foo',
+              {
+                path: '/TestSvc/Foo',
+                emitter: 'service',
+                latency,
+                request: {
+                  id: 11,
+                  name: ['john', 'doe'],
+                  password: 'qwerty',
+                  empty: {}
+                },
+                response: { result: 'ok' }
+              }
+            );
             done();
           });
         });
@@ -187,13 +190,16 @@ describe('Service', () => {
         it('logs response', done => {
           (client as any)['foo']({}, (__: any, _: FooTest.BarResponse) => {
             expect(logger.info).toHaveBeenCalledTimes(1);
-            expect(logger.info).toHaveBeenCalledWith('GRPC /TestSvc/Foo', {
-              path: '/TestSvc/Foo',
-              request: {},
-              error: serverError,
-              emitter: 'service',
-              latency
-            });
+            expect(logger.info).toHaveBeenCalledWith(
+              'GRPC service /TestSvc/Foo',
+              {
+                path: '/TestSvc/Foo',
+                request: {},
+                error: serverError,
+                emitter: 'service',
+                latency
+              }
+            );
             done();
           });
         });
@@ -256,18 +262,21 @@ describe('Service', () => {
           };
           (client as any)['foo'](req, () => {
             expect(logger.info).toHaveBeenCalledTimes(1);
-            expect(logger.info).toHaveBeenCalledWith('GRPC /TestSvc/Foo', {
-              path: '/TestSvc/Foo',
-              request: {
-                id: 11,
-                name: ['john', 'doe'],
-                password: 'qwerty',
-                empty: {}
-              },
-              response: { result: 'ok' },
-              emitter: 'service',
-              latency
-            });
+            expect(logger.info).toHaveBeenCalledWith(
+              'GRPC service /TestSvc/Foo',
+              {
+                path: '/TestSvc/Foo',
+                request: {
+                  id: 11,
+                  name: ['john', 'doe'],
+                  password: 'qwerty',
+                  empty: {}
+                },
+                response: { result: 'ok' },
+                emitter: 'service',
+                latency
+              }
+            );
             done();
           });
         });
@@ -318,7 +327,7 @@ describe('Service', () => {
             (_: any, __: FooTest.BarResponse) => {
               expect(logger.info).toHaveBeenCalledTimes(1);
               expect(logger.info).toHaveBeenCalledWith(
-                'GRPC /TestSvc/FooClientStream',
+                'GRPC service /TestSvc/FooClientStream',
                 {
                   path: '/TestSvc/FooClientStream',
                   request: 'STREAM',
@@ -375,7 +384,7 @@ describe('Service', () => {
             (__: any, _: FooTest.BarResponse) => {
               expect(logger.info).toHaveBeenCalledTimes(1);
               expect(logger.info).toHaveBeenCalledWith(
-                'GRPC /TestSvc/FooClientStream',
+                'GRPC service /TestSvc/FooClientStream',
                 {
                   path: '/TestSvc/FooClientStream',
                   request: 'STREAM',
@@ -481,7 +490,7 @@ describe('Service', () => {
         expect(data.result).toEqual('Foo stream');
         expect(logger.info).toHaveBeenCalledTimes(1);
         expect(logger.info).toHaveBeenCalledWith(
-          'GRPC /TestSvc/FooServerStream',
+          'GRPC service /TestSvc/FooServerStream',
           {
             path: '/TestSvc/FooServerStream',
             request: {

@@ -85,12 +85,15 @@ describe('Client', () => {
 
       it('logs request and response', done => {
         expect(loggerMock.info).toHaveBeenCalledTimes(1);
-        expect(loggerMock.info).toHaveBeenCalledWith('GRPC /TestSvc/Foo', {
-          path: '/TestSvc/Foo',
-          emitter: 'client',
-          latency: expect.any(Number),
-          request
-        });
+        expect(loggerMock.info).toHaveBeenCalledWith(
+          'GRPC client /TestSvc/Foo',
+          {
+            path: '/TestSvc/Foo',
+            emitter: 'client',
+            latency: expect.any(Number),
+            request
+          }
+        );
         done();
       });
 

@@ -71,7 +71,7 @@ const logging = (
     latency: latency?.getValue()
   };
 
-  logger.info(`GRPC ${logData.path}`, logData);
+  logger.info(`GRPC service ${logData.path}`, logData);
 };
 
 const otherImplementation = <T>(

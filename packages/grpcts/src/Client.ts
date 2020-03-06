@@ -59,7 +59,7 @@ export class Client {
     latency: ILatency
   ) {
     const path = this.definition[method].path;
-    this.logger?.info(`GRPC ${path}`, {
+    this.logger?.info(`GRPC client ${path}`, {
       request: req,
       emitter: 'client',
       latency: latency.getValue(),
