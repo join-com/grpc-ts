@@ -19,7 +19,7 @@
     "access": "public"
   },
   "repository": "https://github.com/join-com/grpc-ts.git",
-  "author": "JOIN Team",
+  "author": "JOIN Solutions AG",
   "license": "MIT",
   "engines": {
     "node": ">=8"
