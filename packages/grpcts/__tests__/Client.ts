@@ -41,13 +41,12 @@ let loggerMock = {
   info: jest.fn()
 };
 
-const client = new FooTest.TestSvcClient(
-  `0.0.0.0:${port}`,
-  grpc.credentials.createInsecure(),
+const client = new FooTest.TestSvcClient({
+  address: `0.0.0.0:${port}`,
+  credentials: grpc.credentials.createInsecure(),
   trace,
-  undefined,
-  loggerMock
-);
+  logger: loggerMock
+});
 
 describe('Client', () => {
   afterAll(() => {
