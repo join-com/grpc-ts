@@ -240,9 +240,12 @@ export namespace FooTest {
     ): void;
   }
 
+  type ClientConfig = Omit<grpcts.Config, 'definition'>;
+
   export class TestSvcClient extends grpcts.Client {
-    constructor(config: grpcts.Config) {
-      super(testSvcServiceDefinition, {
+    constructor(config: ClientConfig) {
+      super({
+        definition: testSvcServiceDefinition,
         trace: nodeTrace,
         ...config
       });

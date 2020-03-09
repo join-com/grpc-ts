@@ -16,6 +16,7 @@ export interface Logger {
 
 export interface Config {
   address: string;
+  definition: grpc.ServiceDefinition<any>;
   credentials?: grpc.ChannelCredentials;
   trace?: ClientTrace;
   options?: object;
@@ -26,14 +27,13 @@ export interface Config {
 export class Client {
   public client: GrpcClient;
 
+  private definition: grpc.ServiceDefinition<any>;
   private latencyTimer: ILatencyTimer;
   private trace?: ClientTrace;
   private logger?: Logger;
 
-  constructor(
-    private readonly definition: grpc.ServiceDefinition<any>,
-    config: Config
-  ) {
+  constructor(config: Config) {
+    this.definition = config.definition;
     this.trace = config.trace;
     this.logger = config.logger;
     this.latencyTimer = config.latencyTimer ?? new LatencyTimer();
