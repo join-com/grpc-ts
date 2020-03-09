@@ -14,19 +14,41 @@ export interface Logger {
   info(message: string, payload?: any): void;
 }
 
+export interface Config {
+  address: string;
+  definition: grpc.ServiceDefinition<any>;
+  credentials?: grpc.ChannelCredentials;
+  trace?: ClientTrace;
+  options?: object;
+  logger?: Logger;
+  latencyTimer?: ILatencyTimer;
+}
+
 export class Client {
   public client: GrpcClient;
-  constructor(
-    readonly definition: grpc.ServiceDefinition<any>,
-    address: string,
-    credentials: grpc.ChannelCredentials = grpc.credentials.createInsecure(),
-    public readonly trace?: ClientTrace,
-    options?: object,
-    private readonly logger?: Logger,
-    private readonly latencyTimer: ILatencyTimer = new LatencyTimer()
-  ) {
-    const ClientClass = grpc.makeGenericClientConstructor(definition, '', {});
-    this.client = new ClientClass(address, credentials, options) as GrpcClient;
+
+  private definition: grpc.ServiceDefinition<any>;
+  private latencyTimer: ILatencyTimer;
+  private trace?: ClientTrace;
+  private logger?: Logger;
+
+  constructor(config: Config) {
+    this.definition = config.definition;
+    this.trace = config.trace;
+    this.logger = config.logger;
+    this.latencyTimer = config.latencyTimer ?? new LatencyTimer();
+
+    const ClientClass = grpc.makeGenericClientConstructor(
+      this.definition,
+      '',
+      {}
+    );
+
+    this.client = new ClientClass(
+      config.address,
+      config.credentials ?? grpc.credentials.createInsecure(),
+      config.options
+    ) as GrpcClient;
   }
 
   public close() {

@@ -240,22 +240,15 @@ export namespace FooTest {
     ): void;
   }
 
+  type ClientConfig = Omit<grpcts.Config, 'definition'>;
+
   export class TestSvcClient extends grpcts.Client {
-    constructor(
-      address: string,
-      credentials?: grpcts.grpc.ChannelCredentials,
-      trace: grpcts.ClientTrace = nodeTrace,
-      options?: object,
-      logger?: grpcts.Logger
-    ) {
-      super(
-        testSvcServiceDefinition,
-        address,
-        credentials,
-        trace,
-        options,
-        logger
-      );
+    constructor(config: ClientConfig) {
+      super({
+        definition: testSvcServiceDefinition,
+        trace: nodeTrace,
+        ...config
+      });
     }
     public foo(req: IFooRequest, metadata?: grpcts.Metadata) {
       return super.makeUnaryRequest<IFooRequest, IBarResponse>(
