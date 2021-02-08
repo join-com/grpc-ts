@@ -150,6 +150,7 @@ describe('Client', () => {
           expect(error.code).toEqual('MY_ERROR');
           expect(error.message).toEqual('my error');
           expect(error.grpcCode).toEqual(grpc.status.UNKNOWN);
+          expect(error.methodName).toEqual('foo');
         });
 
         it('attaches metadata', async () => {
@@ -208,6 +209,7 @@ describe('Client', () => {
           expect(error.code).toEqual('MY_ERROR');
           expect(error.message).toEqual('my error');
           expect(error.grpcCode).toEqual(grpc.status.UNKNOWN);
+          expect(error.methodName).toEqual('foo');
         });
 
         it('attaches metadata', async () => {
@@ -237,6 +239,7 @@ describe('Client', () => {
           } catch (e) {
             expect(e.message).toEqual('2 UNKNOWN: Unknown Error');
             expect(e.grpcCode).toEqual(grpc.status.UNKNOWN);
+            expect(e.methodName).toEqual('foo');
           }
         });
       });
@@ -318,6 +321,7 @@ describe('Client', () => {
           expect(error.code).toEqual('MY_ERROR');
           expect(error.message).toEqual('my error');
           expect(error.grpcCode).toEqual(grpc.status.UNKNOWN);
+          expect(error.methodName).toEqual('fooClientStream');
         });
 
         it('attaches metadata', async () => {
@@ -351,6 +355,7 @@ describe('Client', () => {
           } catch (e) {
             expect(e.message).toEqual('2 UNKNOWN: Unknown Error');
             expect(e.grpcCode).toEqual(grpc.status.UNKNOWN);
+            expect(e.methodName).toEqual('fooClientStream');
           }
         });
       });

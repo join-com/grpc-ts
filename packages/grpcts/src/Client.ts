@@ -68,7 +68,7 @@ export class Client {
         this.metadata(metadata),
         (err: grpc.ServiceError, res: ResponseType) => {
           this.log(methodName, req, latency);
-          err ? reject(this.convertError(err)) : resolve(res);
+          err ? reject(this.convertError(err, methodName)) : resolve(res);
         }
       );
     });
@@ -98,7 +98,7 @@ export class Client {
       call = this.client[methodName](
         this.metadata(metadata),
         (err: any, res: ResponseType) => {
-          err ? reject(this.convertError(err)) : resolve(res);
+          err ? reject(this.convertError(err, methodName)) : resolve(res);
         }
       );
     });
@@ -130,18 +130,24 @@ export class Client {
   protected assignError(
     metadata: grpc.Metadata,
     errorJSON: any,
+    methodName: string,
     code?: grpc.status
   ) {
     const error = new ClientError();
     Object.assign(error, {
       ...errorJSON,
       grpcCode: code,
-      metadata: metadata
+      metadata: metadata,
+      methodName
     });
     return error;
   }
 
-  protected handleMetaError(metadata: grpc.Metadata, code?: grpc.status) {
+  protected handleMetaError(
+    metadata: grpc.Metadata,
+    methodName: string,
+    code?: grpc.status
+  ) {
     const metadataError = metadata.get('error'); // deprecated, remove in next version
     const metadataBinaryError = metadata.get('error-bin');
     if (!metadataError.length && !metadataBinaryError.length) {
@@ -152,16 +158,16 @@ export class Client {
         ? metadataBinaryError[0].toString()
         : (metadataError[0] as string)
     );
-    return this.assignError(metadata, errorJSON, code);
+    return this.assignError(metadata, errorJSON, methodName, code);
   }
 
-  protected convertError(err: grpc.ServiceError) {
+  protected convertError(err: grpc.ServiceError, methodName: string) {
     const { metadata } = err;
     if (metadata) {
-      const error = this.handleMetaError(metadata, err.code);
+      const error = this.handleMetaError(metadata, methodName, err.code);
       if (error) return error;
     }
-    return Object.assign(err, { grpcCode: err.code });
+    return Object.assign(err, { grpcCode: err.code, methodName });
   }
 
   private metadata(attrs?: Metadata) {
