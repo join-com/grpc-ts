@@ -38,6 +38,6 @@ export class Server {
   }
 
   public tryShutdown() {
-    return new Promise(resolve => this.server.tryShutdown(resolve));
+    return this.server.tryShutdown;
   }
 }

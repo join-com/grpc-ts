@@ -331,10 +331,10 @@
     "@types/istanbul-reports" "^1.1.1"
     "@types/yargs" "^13.0.0"
 
-"@join-com/grpc-ts@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/@join-com/grpc-ts/-/grpc-ts-2.0.0.tgz#7a678936979685cefea98e533a21c24fafc764b1"
-  integrity sha512-P4ermSbKHUpkpyG9olOs/Y02oyTBp7FtSq+2TQ1ugbjuYcymQ/D/f1brXx27c9f0+dehw6CMJGtHqe3ID1Otew==
+"@join-com/grpc-ts@^2.0.1":
+  version "2.0.1"
+  resolved "https://registry.npmjs.org/@join-com/grpc-ts/-/grpc-ts-2.0.1.tgz#2171a2d9b7abb46cd0edeb00124c9b9e57ee754e"
+  integrity sha512-s3me0wqLO7bjqTiDMb1rGZbH4K/BiwZz2LUq6T9qHNTrbJcX9C2LWduRla7W+wNtV+TvyMmhfSQm0jIIrvasLw==
   dependencies:
     grpc "^1.24.2"
 
