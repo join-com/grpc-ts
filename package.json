@@ -3,7 +3,8 @@
   "build": "tsc",
   "makepretty": "prettier --write -l '**/*.ts'",
   "lint": "yarn tslint -p .",
-  "precommit": "lerna run tsc:check && lint-staged"
+  "precommit": ".hooks/pre-commit",
+  "postinstall": "if [ -d .git ]; then git config core.hooksPath .hooks; fi"
  },
  "lint-staged": {
   "*.{js,ts,md}": [
@@ -13,13 +14,7 @@
    "yarn lint --fix"
   ]
  },
- "husky": {
-  "hooks": {
-   "pre-commit": "lerna run tsc:check && lint-staged"
-  }
- },
  "devDependencies": {
-  "husky": "^4.2.3",
   "lerna": "^3.20.2",
   "lint-staged": "^10.0.8",
   "prettier": "^2.2.1"
@@ -35,6 +30,6 @@
   "jest-watch-typeahead": "^0.6.1",
   "protobufjs": "^6.10.2",
   "ts-jest": "^26.5.1",
-  "typescript": "^4.1.5"
+  "typescript": "^4.2.3"
  }
 }

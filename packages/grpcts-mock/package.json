@@ -41,7 +41,7 @@
     "jest-cli": "^26.6.3",
     "jest-watch-typeahead": "^0.6.1",
     "ts-jest": "^26.5.1",
-    "typescript": "^4.1.5"
+    "typescript": "^4.2.3"
   },
   "dependencies": {
     "@join-com/grpc-ts": "^2.0.2",

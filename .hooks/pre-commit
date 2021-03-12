@@ -1,0 +1,3 @@
+#!/bin/sh
+
+lerna run tsc:check && yarn lint-staged
