@@ -178,7 +178,7 @@ export namespace FooTest {
       requestDeserialize: (argBuf: Buffer) => FooRequest.decode(argBuf),
       responseSerialize: (args: IBarResponse) =>
         new BarResponse(args).encode().finish() as Buffer,
-      responseDeserialize: (argBuf: Buffer) => BarResponse.decode(argBuf)
+      responseDeserialize: (argBuf: Buffer) => BarResponse.decode(argBuf),
     },
     fooServerStream: {
       path: '/TestSvc/FooServerStream',
@@ -191,7 +191,7 @@ export namespace FooTest {
       requestDeserialize: (argBuf: Buffer) => FooRequest.decode(argBuf),
       responseSerialize: (args: IStreamBarResponse) =>
         new StreamBarResponse(args).encode().finish() as Buffer,
-      responseDeserialize: (argBuf: Buffer) => StreamBarResponse.decode(argBuf)
+      responseDeserialize: (argBuf: Buffer) => StreamBarResponse.decode(argBuf),
     },
     fooClientStream: {
       path: '/TestSvc/FooClientStream',
@@ -204,7 +204,7 @@ export namespace FooTest {
       requestDeserialize: (argBuf: Buffer) => FooRequest.decode(argBuf),
       responseSerialize: (args: IBarResponse) =>
         new BarResponse(args).encode().finish() as Buffer,
-      responseDeserialize: (argBuf: Buffer) => BarResponse.decode(argBuf)
+      responseDeserialize: (argBuf: Buffer) => BarResponse.decode(argBuf),
     },
     fooBidiStream: {
       path: '/TestSvc/FooBidiStream',
@@ -217,8 +217,8 @@ export namespace FooTest {
       requestDeserialize: (argBuf: Buffer) => FooRequest.decode(argBuf),
       responseSerialize: (args: IStreamBarResponse) =>
         new StreamBarResponse(args).encode().finish() as Buffer,
-      responseDeserialize: (argBuf: Buffer) => StreamBarResponse.decode(argBuf)
-    }
+      responseDeserialize: (argBuf: Buffer) => StreamBarResponse.decode(argBuf),
+    },
   };
 
   export interface ITestSvcImplementation extends grpcts.Implementations {
@@ -240,14 +240,14 @@ export namespace FooTest {
     ): void;
   }
 
-  type ClientConfig = Omit<grpcts.Config, 'definition'>;
+  export type ClientConfig = Omit<grpcts.Config, 'definition'>;
 
   export class TestSvcClient extends grpcts.Client {
     constructor(config: ClientConfig) {
       super({
         definition: testSvcServiceDefinition,
         trace: nodeTrace,
-        ...config
+        ...config,
       });
     }
     public foo(req: IFooRequest, metadata?: grpcts.Metadata) {

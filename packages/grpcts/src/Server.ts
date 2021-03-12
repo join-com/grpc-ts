@@ -1,4 +1,4 @@
-import * as grpc from 'grpc';
+import * as grpc from '@grpc/grpc-js';
 
 export interface Service {
   serviceDefinition: grpc.ServiceDefinition<any>;
@@ -7,6 +7,22 @@ export interface Service {
 
 export interface Logger {
   info(message: string, payload?: any): void;
+}
+
+export async function bindServer(
+  server: grpc.Server,
+  host: string,
+  credentials: grpc.ServerCredentials
+): Promise<number> {
+  return new Promise<number>((resolve, reject) => {
+    server.bindAsync(host, credentials, (error, port) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve(port);
+      }
+    });
+  });
 }
 
 export class Server {
@@ -26,7 +42,9 @@ export class Server {
 
   public async start(host: string) {
     const [hostName] = host.split(':');
-    this.port = this.server.bind(host, this.credentials);
+
+    this.port = await bindServer(this.server, host, this.credentials)
+
     if (this.port === 0) {
       throw Error(`Can not connect to host ${host}`);
     }
@@ -38,6 +56,14 @@ export class Server {
   }
 
   public tryShutdown() {
-    return new Promise<void>((resolve) => this.server.tryShutdown(resolve));
+    return new Promise<void>((resolve, reject) =>
+      this.server.tryShutdown((error) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve();
+        }
+      })
+    );
   }
 }

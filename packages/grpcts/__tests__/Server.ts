@@ -1,5 +1,5 @@
 import { Server } from '../src/Server';
-import * as grpc from 'grpc';
+import * as grpc from '@grpc/grpc-js';
 
 describe('Server', () => {
   describe('start', () => {
