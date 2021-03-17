@@ -1,6 +1,6 @@
 {
   "name": "@join-com/grpc-ts",
-  "version": "2.0.2",
+  "version": "3.0.0",
   "description": "grpc typescript wrapper",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
@@ -22,11 +22,15 @@
   "author": "JOIN Solutions AG",
   "license": "MIT",
   "engines": {
-    "node": ">=8"
+    "node": ">=12"
   },
   "homepage": "https://github.com/join-com/grpc-ts",
   "contributors": [
-    "Anton Versal <anton.versal@gmail.com>"
+    "Anton Versal <anton.versal@gmail.com>",
+    "Ievgen Kyrpychenko",
+    "Tomasz Cichowicz",
+    "Mayada Fahim",
+    "Andres Correa Casablanca <andreu.casablanca@join.com>"
   ],
   "keywords": [
     "grpc",
@@ -46,9 +50,9 @@
     "prettier": "^2.2.1",
     "protobufjs": "^6.10.2",
     "ts-jest": "^26.5.1",
-    "typescript": "^4.1.5"
+    "typescript": "^4.2.3"
   },
   "dependencies": {
-    "grpc": "^1.24.5"
+    "@grpc/grpc-js": "^1.2.10"
   }
 }

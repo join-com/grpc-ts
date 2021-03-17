@@ -1,12 +1,12 @@
 import { FooTest } from './generated/foo/Foo';
-import * as grpc from 'grpc';
+import * as grpc from '@grpc/grpc-js';
+import { bindServer } from '../src/Server';
 
-const server = new grpc.Server();
 const implementationsMock = {
   foo: jest.fn((_, callback) => {
     callback(null, { result: 'ok' });
   }),
-  fooServerStream: jest.fn(call => {
+  fooServerStream: jest.fn((call) => {
     call.write({ result: call.request.name[0] });
     call.end();
   }),
@@ -15,40 +15,52 @@ const implementationsMock = {
     call.on('data', (data: FooTest.FooRequest) => (result += data.id));
     call.on('end', () => callback(null, { result }));
   }),
-  fooBidiStream: jest.fn(async call => {
+  fooBidiStream: jest.fn(async (call) => {
     call
-      .on('data', data => {
+      .on('data', (data) => {
         call.write({ result: `${data.id}` });
       })
       .on('end', () => {
         call.end();
       });
-  })
+  }),
 };
-server.addService(FooTest.testSvcServiceDefinition, implementationsMock);
-
-const port = server.bind('0.0.0.0:0', grpc.ServerCredentials.createInsecure());
-server.start();
 
 const traceContextName = 'trace-name';
 const traceContext = 'trace-context';
 let trace = {
   getTraceContextName: () => traceContextName,
-  getTraceContext: () => traceContext
+  getTraceContext: () => traceContext,
 };
 
 let loggerMock = {
-  info: jest.fn()
+  info: jest.fn(),
 };
 
-const client = new FooTest.TestSvcClient({
-  address: `0.0.0.0:${port}`,
-  credentials: grpc.credentials.createInsecure(),
-  trace,
-  logger: loggerMock
-});
-
 describe('Client', () => {
+  let server: grpc.Server;
+  let port: number;
+  let client: FooTest.TestSvcClient;
+
+  beforeAll(async () => {
+    server = new grpc.Server();
+    server.addService(FooTest.testSvcServiceDefinition, implementationsMock);
+
+    port = await bindServer(
+      server,
+      '0.0.0.0:0',
+      grpc.ServerCredentials.createInsecure()
+    );
+    server.start();
+
+    client = new FooTest.TestSvcClient({
+      address: `0.0.0.0:${port}`,
+      credentials: grpc.credentials.createInsecure(),
+      trace,
+      logger: loggerMock,
+    });
+  });
+
   afterAll(() => {
     client.close();
     server.forceShutdown();
@@ -68,7 +80,7 @@ describe('Client', () => {
   describe('unary call', () => {
     describe('success', () => {
       const request: FooTest.IFooRequest = {
-        id: 1
+        id: 1,
       };
 
       let response: FooTest.IBarResponse;
@@ -82,7 +94,7 @@ describe('Client', () => {
         expect(response).toEqual({ result: 'ok' });
       });
 
-      it('logs request and response', done => {
+      it('logs request and response', (done) => {
         expect(loggerMock.info).toHaveBeenCalledTimes(1);
         expect(loggerMock.info).toHaveBeenCalledWith(
           'GRPC client /TestSvc/Foo',
@@ -90,7 +102,7 @@ describe('Client', () => {
             path: '/TestSvc/Foo',
             emitter: 'client',
             latency: expect.any(Number),
-            request
+            request,
           }
         );
         done();
@@ -119,14 +131,16 @@ describe('Client', () => {
                 'error',
                 JSON.stringify(
                   e,
-                  Object.getOwnPropertyNames(e).filter(prop => prop !== 'stack')
+                  Object.getOwnPropertyNames(e).filter(
+                    (prop) => prop !== 'stack'
+                  )
                 )
               );
               metadata.set('foo', 'bar');
               callback(
                 {
                   code: grpc.status.UNKNOWN,
-                  metadata
+                  metadata,
                 } as any,
                 {}
               );
@@ -176,7 +190,7 @@ describe('Client', () => {
                   JSON.stringify(
                     e,
                     Object.getOwnPropertyNames(e).filter(
-                      prop => prop !== 'stack'
+                      (prop) => prop !== 'stack'
                     )
                   )
                 )
@@ -185,7 +199,7 @@ describe('Client', () => {
               callback(
                 {
                   code: grpc.status.UNKNOWN,
-                  metadata
+                  metadata,
                 } as any,
                 {}
               );
@@ -263,14 +277,14 @@ describe('Client', () => {
 
       it('attaches traceId', async () => {
         const {
-          metadata
+          metadata,
         } = implementationsMock.fooClientStream.mock.calls[0][0];
         expect(metadata.get(traceContextName)).toEqual([traceContext]);
       });
 
       it('sends metadata', async () => {
         const {
-          metadata
+          metadata,
         } = implementationsMock.fooClientStream.mock.calls[0][0];
         expect(metadata.get('foo')).toEqual(['bar']);
       });
@@ -288,14 +302,16 @@ describe('Client', () => {
                 'error',
                 JSON.stringify(
                   e,
-                  Object.getOwnPropertyNames(e).filter(prop => prop !== 'stack')
+                  Object.getOwnPropertyNames(e).filter(
+                    (prop) => prop !== 'stack'
+                  )
                 )
               );
               metadata.set('foo', 'bar');
               callback(
                 {
                   code: grpc.status.UNKNOWN,
-                  metadata
+                  metadata,
                 } as any,
                 {}
               );
@@ -330,7 +346,7 @@ describe('Client', () => {
 
         it('attaches traceId', async () => {
           const {
-            metadata
+            metadata,
           } = implementationsMock.fooClientStream.mock.calls[0][0];
           expect(metadata.get(traceContextName)).toEqual([traceContext]);
         });

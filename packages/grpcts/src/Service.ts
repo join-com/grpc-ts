@@ -1,16 +1,17 @@
-import * as grpc from 'grpc';
+import * as grpc from '@grpc/grpc-js';
 import { ILatency, ILatencyTimer, LatencyTimer } from './LatencyTimer';
 
 export type handleUnaryCallPromise<RequestType, ResponseType> = (
-  call: grpc.ServerUnaryCall<RequestType>
+  call: grpc.ServerUnaryCall<RequestType, ResponseType>
 ) => Promise<ResponseType>;
 
 export type handleClientStreamingCallPromise<RequestType, ResponseType> = (
-  call: grpc.ServerReadableStream<RequestType>
+  call: grpc.ServerReadableStream<RequestType, ResponseType>
 ) => Promise<ResponseType>;
 
 export type handleCall<RequestType, ResponseType> =
-  | grpc.handleCall<RequestType, ResponseType>
+  | grpc.handleUnaryCall<RequestType, ResponseType>
+  | grpc.handleClientStreamingCall<RequestType, ResponseType>
   | handleUnaryCallPromise<RequestType, ResponseType>
   | handleClientStreamingCallPromise<RequestType, ResponseType>;
 
@@ -31,13 +32,15 @@ function replacer(key: string, value: any) {
   if (key === 'stack') {
     return;
   }
+
   if (value instanceof Error) {
     const error = Object.getOwnPropertyNames(value).reduce(
-      (acc, key: string) => ({ ...acc, [key]: (value as any)[key] }),
+      (acc, _key: string) => ({ ...acc, [_key]: (value as any)[_key] }),
       {}
     );
     return error;
   }
+
   return value;
 }
 
@@ -47,7 +50,7 @@ const handleError = (e: Error, callback: grpc.sendUnaryData<any>) => {
   callback(
     {
       code: grpc.status.UNKNOWN,
-      metadata
+      metadata,
     } as any,
     {}
   );
@@ -68,7 +71,7 @@ const logging = (
     [isError ? 'error' : 'response']: response,
     path: definition.path,
     emitter: 'service',
-    latency: latency?.getValue()
+    latency: latency?.getValue(),
   };
 
   logger.info(`GRPC service ${logData.path}`, logData);
@@ -192,7 +195,7 @@ export class Service<I extends Implementations> {
           ...acc,
           [name]: this.trace
             ? wrapImplementationWithTrace(newImplementation, this.trace)
-            : newImplementation
+            : newImplementation,
         };
       },
       {}

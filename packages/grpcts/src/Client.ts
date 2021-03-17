@@ -1,4 +1,4 @@
-import * as grpc from 'grpc';
+import * as grpc from '@grpc/grpc-js';
 import { ClientError } from './ClientError';
 import { toGRPCMetadata, Metadata } from './metadata';
 import { ILatencyTimer, LatencyTimer, ILatency } from './LatencyTimer';
@@ -62,16 +62,18 @@ export class Client {
   ): { call: grpc.ClientUnaryCall; res: Promise<ResponseType> } {
     let call: grpc.ClientUnaryCall | undefined;
     const latency = this.latencyTimer.start();
+
     const res = new Promise<ResponseType>((resolve, reject) => {
       call = this.client[methodName](
         req,
         this.metadata(metadata),
-        (err: grpc.ServiceError, res: ResponseType) => {
+        (err: grpc.ServiceError, result: ResponseType) => {
           this.log(methodName, req, latency);
-          err ? reject(this.convertError(err, methodName)) : resolve(res);
+          err ? reject(this.convertError(err, methodName)) : resolve(result);
         }
       );
     });
+
     return { call: call!, res };
   }
 
@@ -85,7 +87,7 @@ export class Client {
       request: req,
       emitter: 'client',
       latency: latency.getValue(),
-      path
+      path,
     });
   }
 
@@ -97,8 +99,8 @@ export class Client {
     const res = new Promise<ResponseType>((resolve, reject) => {
       call = this.client[methodName](
         this.metadata(metadata),
-        (err: any, res: ResponseType) => {
-          err ? reject(this.convertError(err, methodName)) : resolve(res);
+        (err: any, result: ResponseType) => {
+          err ? reject(this.convertError(err, methodName)) : resolve(result);
         }
       );
     });
@@ -137,8 +139,8 @@ export class Client {
     Object.assign(error, {
       ...errorJSON,
       grpcCode: code,
-      metadata: metadata,
-      methodName
+      metadata,
+      methodName,
     });
     return error;
   }

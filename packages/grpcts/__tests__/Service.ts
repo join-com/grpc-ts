@@ -1,27 +1,30 @@
 import { Service, Trace } from '../src/Service';
 import { FooTest } from './generated/foo/Foo';
-import * as grpc from 'grpc';
+import * as grpc from '@grpc/grpc-js';
+import { bindServer } from '../src/Server';
 
 let client: grpc.Client;
 let server: grpc.Server;
 let logger = {
-  info: jest.fn()
+  info: jest.fn(),
 };
 
 const traceContextName = 'trace-context-name';
 const trace: Trace = {
   getTraceContextName: () => traceContextName,
-  start: jest.fn()
+  start: jest.fn(),
 };
 
 const latency = 200;
 const latencyTimerMock = {
   start: () => ({
-    getValue: () => latency
-  })
+    getValue: () => latency,
+  }),
 };
 
-const startService = (implementations: FooTest.ITestSvcImplementation) => {
+const startService = async (
+  implementations: FooTest.ITestSvcImplementation
+) => {
   const service = new Service<FooTest.ITestSvcImplementation>(
     FooTest.testSvcServiceDefinition,
     implementations,
@@ -33,7 +36,8 @@ const startService = (implementations: FooTest.ITestSvcImplementation) => {
   server = new grpc.Server();
   server.addService(service.serviceDefinition, service.implementations);
 
-  const port = server.bind(
+  const port = await bindServer(
+    server,
     '0.0.0.0:0',
     grpc.ServerCredentials.createInsecure()
   );
@@ -60,12 +64,12 @@ describe('Service', () => {
     describe('promise implementation', () => {
       const fooMock = jest.fn(async () => ({ result: 'ok' }));
 
-      beforeAll(() => {
-        startService({
+      beforeAll(async () => {
+        await startService({
           foo: fooMock,
           fooServerStream: jest.fn(),
           fooClientStream: jest.fn(),
-          fooBidiStream: jest.fn()
+          fooBidiStream: jest.fn(),
         });
       });
 
@@ -75,12 +79,12 @@ describe('Service', () => {
       });
 
       describe('success', () => {
-        it('calls with correct attributes', done => {
+        it('calls with correct attributes', (done) => {
           const req: FooTest.FooRequest = {
             id: 11,
             name: ['john', 'doe'],
             password: 'qwerty',
-            empty: {}
+            empty: {},
           };
           (client as any)['foo'](req, () => {
             const call = fooMock.mock.calls[0][0];
@@ -92,7 +96,7 @@ describe('Service', () => {
           });
         });
 
-        it('returns correct result', done => {
+        it('returns correct result', (done) => {
           (client as any)['foo'](
             {},
             (_: any, response: FooTest.BarResponse) => {
@@ -102,12 +106,12 @@ describe('Service', () => {
           );
         });
 
-        it('logs request and response', done => {
+        it('logs request and response', (done) => {
           const req: FooTest.IFooRequest = {
             id: 11,
             name: ['john', 'doe'],
             password: 'qwerty',
-            empty: {}
+            empty: {},
           };
           (client as any)['foo'](req, () => {
             expect(logger.info).toHaveBeenCalledTimes(1);
@@ -121,9 +125,9 @@ describe('Service', () => {
                   id: 11,
                   name: ['john', 'doe'],
                   password: 'qwerty',
-                  empty: {}
+                  empty: {},
                 },
-                response: { result: 'ok' }
+                response: { result: 'ok' },
               }
             );
             done();
@@ -131,7 +135,7 @@ describe('Service', () => {
         });
 
         describe('tracing', () => {
-          it('starts tracing when trace id is sent', done => {
+          it('starts tracing when trace id is sent', (done) => {
             const traceId = '66551gggd7128218g28g182dg8172';
             const metadata = new grpc.Metadata();
             metadata.set(traceContextName, traceId);
@@ -147,8 +151,8 @@ describe('Service', () => {
         const serverError: any = new Error('Something wrong æøå');
         serverError.nested = [
           {
-            nestedField: 'nested'
-          }
+            nestedField: 'nested',
+          },
         ];
         beforeEach(() => {
           fooMock.mockImplementation(async () => {
@@ -156,14 +160,14 @@ describe('Service', () => {
           });
         });
 
-        it('returns unknown status', done => {
+        it('returns unknown status', (done) => {
           (client as any)['foo']({}, (error: any, _: FooTest.BarResponse) => {
             expect(error.code).toEqual(2);
             done();
           });
         });
 
-        it('returns error in metadata', done => {
+        it('returns error in metadata', (done) => {
           (client as any)['foo']({}, (error: any, _: FooTest.BarResponse) => {
             const err = JSON.parse(
               error.metadata.get('error-bin').toString('utf8')
@@ -173,21 +177,21 @@ describe('Service', () => {
           });
         });
 
-        it('converts nested propery', done => {
+        it('converts nested propery', (done) => {
           (client as any)['foo']({}, (error: any, _: FooTest.BarResponse) => {
             const err = JSON.parse(
               error.metadata.get('error-bin').toString('utf8')
             );
             expect(err.nested).toEqual([
               {
-                nestedField: 'nested'
-              }
+                nestedField: 'nested',
+              },
             ]);
             done();
           });
         });
 
-        it('logs response', done => {
+        it('logs response', (done) => {
           (client as any)['foo']({}, (__: any, _: FooTest.BarResponse) => {
             expect(logger.info).toHaveBeenCalledTimes(1);
             expect(logger.info).toHaveBeenCalledWith(
@@ -197,7 +201,7 @@ describe('Service', () => {
                 request: {},
                 error: serverError,
                 emitter: 'service',
-                latency
+                latency,
               }
             );
             done();
@@ -211,12 +215,12 @@ describe('Service', () => {
         callback(null, { result: 'ok' });
       });
 
-      beforeAll(() => {
-        startService({
+      beforeAll(async () => {
+        await startService({
           foo: fooMock,
           fooServerStream: jest.fn(),
           fooClientStream: jest.fn(),
-          fooBidiStream: jest.fn()
+          fooBidiStream: jest.fn(),
         });
       });
 
@@ -226,12 +230,12 @@ describe('Service', () => {
       });
 
       describe('success', () => {
-        it('calls with correct attributes', done => {
+        it('calls with correct attributes', (done) => {
           const req: FooTest.IFooRequest = {
             id: 11,
             name: ['john', 'doe'],
             password: 'qwerty',
-            empty: {}
+            empty: {},
           };
           (client as any)['foo'](req, () => {
             const call = fooMock.mock.calls[0][0];
@@ -243,7 +247,7 @@ describe('Service', () => {
           });
         });
 
-        it('returns correct result', done => {
+        it('returns correct result', (done) => {
           (client as any)['foo'](
             {},
             (_: any, response: FooTest.IBarResponse) => {
@@ -253,12 +257,12 @@ describe('Service', () => {
           );
         });
 
-        it('logs request and response', done => {
+        it('logs request and response', (done) => {
           const req: FooTest.IFooRequest = {
             id: 11,
             name: ['john', 'doe'],
             password: 'qwerty',
-            empty: {}
+            empty: {},
           };
           (client as any)['foo'](req, () => {
             expect(logger.info).toHaveBeenCalledTimes(1);
@@ -270,11 +274,11 @@ describe('Service', () => {
                   id: 11,
                   name: ['john', 'doe'],
                   password: 'qwerty',
-                  empty: {}
+                  empty: {},
                 },
                 response: { result: 'ok' },
                 emitter: 'service',
-                latency
+                latency,
               }
             );
             done();
@@ -286,7 +290,7 @@ describe('Service', () => {
 
   describe('client stream call', () => {
     describe('promise implementation', () => {
-      const fooClientStreamMock = jest.fn(async call => {
+      const fooClientStreamMock = jest.fn(async (call) => {
         let result = '';
         for await (const reqRaw of call as any) {
           const request: FooTest.FooRequest = reqRaw;
@@ -295,12 +299,12 @@ describe('Service', () => {
         return { result: `fooClientStream -> ${result}` };
       });
 
-      beforeAll(() => {
-        startService({
+      beforeAll(async () => {
+        await startService({
           foo: jest.fn(),
           fooServerStream: jest.fn(),
           fooClientStream: fooClientStreamMock,
-          fooBidiStream: jest.fn()
+          fooBidiStream: jest.fn(),
         });
       });
 
@@ -310,7 +314,7 @@ describe('Service', () => {
       });
 
       describe('success', () => {
-        it('calls correctly', done => {
+        it('calls correctly', (done) => {
           const stream = (client as any).fooClientStream(
             (_: any, response: FooTest.BarResponse) => {
               expect(response.result).toEqual('fooClientStream -> 37');
@@ -322,7 +326,7 @@ describe('Service', () => {
           stream.write({ id: 7 });
           stream.end();
         });
-        it('logs request and response', done => {
+        it('logs request and response', (done) => {
           const stream = (client as any).fooClientStream(
             (_: any, __: FooTest.BarResponse) => {
               expect(logger.info).toHaveBeenCalledTimes(1);
@@ -333,7 +337,7 @@ describe('Service', () => {
                   request: 'STREAM',
                   response: { result: 'fooClientStream -> 37' },
                   emitter: 'service',
-                  latency
+                  latency,
                 }
               );
               done();
@@ -354,7 +358,7 @@ describe('Service', () => {
           });
         });
 
-        it('returns unknown status', done => {
+        it('returns unknown status', (done) => {
           const stream = (client as any).fooClientStream(
             (error: any, _: FooTest.BarResponse) => {
               expect(error.code).toEqual(2);
@@ -365,7 +369,7 @@ describe('Service', () => {
           stream.end();
         });
 
-        it('returns error in metadata', done => {
+        it('returns error in metadata', (done) => {
           const stream = (client as any).fooClientStream(
             (error: any, _: FooTest.BarResponse) => {
               const err = JSON.parse(
@@ -379,7 +383,7 @@ describe('Service', () => {
           stream.end();
         });
 
-        it('logs errors', done => {
+        it('logs errors', (done) => {
           const stream = (client as any).fooClientStream(
             (__: any, _: FooTest.BarResponse) => {
               expect(logger.info).toHaveBeenCalledTimes(1);
@@ -390,7 +394,7 @@ describe('Service', () => {
                   request: 'STREAM',
                   error: streamError,
                   emitter: 'service',
-                  latency
+                  latency,
                 }
               );
               done();
@@ -407,12 +411,12 @@ describe('Service', () => {
         callback(null, { result: 'ok' });
       });
 
-      beforeAll(() => {
-        startService({
+      beforeAll(async () => {
+        await startService({
           foo: fooMock,
           fooServerStream: jest.fn(),
           fooClientStream: jest.fn(),
-          fooBidiStream: jest.fn()
+          fooBidiStream: jest.fn(),
         });
       });
 
@@ -421,12 +425,12 @@ describe('Service', () => {
       });
 
       describe('success', () => {
-        it('calls with correct attributes', done => {
+        it('calls with correct attributes', (done) => {
           const req: FooTest.IFooRequest = {
             id: 11,
             name: ['john', 'doe'],
             password: 'qwerty',
-            empty: {}
+            empty: {},
           };
           (client as any)['foo'](req, () => {
             const call = fooMock.mock.calls[0][0];
@@ -437,7 +441,7 @@ describe('Service', () => {
             done();
           });
         });
-        it('returns correct result', done => {
+        it('returns correct result', (done) => {
           (client as any)['foo'](
             {},
             (_: any, response: FooTest.BarResponse) => {
@@ -451,17 +455,17 @@ describe('Service', () => {
   });
 
   describe('server stream call', () => {
-    const fooServerStreamMock = jest.fn(call => {
+    const fooServerStreamMock = jest.fn((call) => {
       call.write({ result: call.request.name[0] });
       call.end();
     });
 
-    beforeAll(() => {
-      startService({
+    beforeAll(async () => {
+      await startService({
         foo: jest.fn(),
         fooServerStream: fooServerStreamMock,
         fooClientStream: jest.fn(),
-        fooBidiStream: jest.fn()
+        fooBidiStream: jest.fn(),
       });
     });
 
@@ -470,10 +474,10 @@ describe('Service', () => {
       logger.info.mockClear();
     });
 
-    it('calls correctly', done => {
+    it('calls correctly', (done) => {
       const stream = (client as any).fooServerStream({
         id: 11,
-        name: ['Foo stream']
+        name: ['Foo stream'],
       });
       stream.on('data', (data: FooTest.BarResponse) => {
         expect(data.result).toEqual('Foo stream');
@@ -481,10 +485,10 @@ describe('Service', () => {
       stream.on('end', done);
     });
 
-    it('logs request and response', done => {
+    it('logs request and response', (done) => {
       const stream = (client as any).fooServerStream({
         id: 11,
-        name: ['Foo stream']
+        name: ['Foo stream'],
       });
       stream.on('data', (data: FooTest.BarResponse) => {
         expect(data.result).toEqual('Foo stream');
@@ -495,10 +499,10 @@ describe('Service', () => {
             path: '/TestSvc/FooServerStream',
             request: {
               id: 11,
-              name: ['Foo stream']
+              name: ['Foo stream'],
             },
             response: 'STREAM',
-            emitter: 'service'
+            emitter: 'service',
           }
         );
       });
@@ -508,8 +512,8 @@ describe('Service', () => {
   });
 
   describe('bidi stream call', () => {
-    const fooServerStreamMock = jest.fn(async call => {
-      call.on('data', data => {
+    const fooServerStreamMock = jest.fn(async (call) => {
+      call.on('data', (data) => {
         call.write({ result: data.name![0] });
       });
 
@@ -518,12 +522,12 @@ describe('Service', () => {
       });
     });
 
-    beforeAll(() => {
-      startService({
+    beforeAll(async () => {
+      await startService({
         foo: jest.fn(),
         fooServerStream: jest.fn(),
         fooClientStream: jest.fn(),
-        fooBidiStream: fooServerStreamMock
+        fooBidiStream: fooServerStreamMock,
       });
     });
 
@@ -531,7 +535,7 @@ describe('Service', () => {
       fooServerStreamMock.mockClear();
     });
 
-    it('calls correctly', done => {
+    it('calls correctly', (done) => {
       const stream = (client as any).fooBidiStream();
       stream.write({ id: 3, name: ['Bar'] });
       stream.end();

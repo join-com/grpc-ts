@@ -7,5 +7,5 @@ export {
   Implementations
 } from './Service';
 export { Server } from './Server';
-export import grpc = require('grpc');
+export import grpc = require('@grpc/grpc-js');
 export { Metadata } from './metadata';
