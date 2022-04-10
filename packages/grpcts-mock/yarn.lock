@@ -475,11 +475,11 @@
     chalk "^4.0.0"
 
 "@join-com/grpc-ts@^2.0.2":
-  version "2.0.1"
-  resolved "https://registry.npmjs.org/@join-com/grpc-ts/-/grpc-ts-2.0.1.tgz#2171a2d9b7abb46cd0edeb00124c9b9e57ee754e"
-  integrity sha512-s3me0wqLO7bjqTiDMb1rGZbH4K/BiwZz2LUq6T9qHNTrbJcX9C2LWduRla7W+wNtV+TvyMmhfSQm0jIIrvasLw==
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/@join-com/grpc-ts/-/grpc-ts-2.0.2.tgz#aba4a12cd7342e8dd08677bfe09bf6fc498ac83f"
+  integrity sha512-QDa7TTZFI+9onGcsg6cMHvyieNloH41efYfueGhB9rpkNP/kPZAtTU6kP7XzYmNIOqqWQTPwR0+9XrJS0ahapg==
   dependencies:
-    grpc "^1.24.2"
+    grpc "^1.24.5"
 
 "@sinonjs/commons@^1.7.0":
   version "1.8.2"
@@ -1676,7 +1676,7 @@ growly@^1.3.0:
   resolved "https://registry.npmjs.org/growly/-/growly-1.3.0.tgz#f10748cbe76af964b7c96c93c6bcc28af120c081"
   integrity sha1-8QdIy+dq+WS3yWyTxrzCivEgwIE=
 
-grpc@^1.24.2, grpc@^1.24.5:
+grpc@^1.24.5:
   version "1.24.5"
   resolved "https://registry.npmjs.org/grpc/-/grpc-1.24.5.tgz#ea39fa44b0397c5881009337de9e8b44b919fe54"
   integrity sha512-+dY6lfLPovblJO5QitBQM2L67efI5JjBzCqJQURSINPzoFHos+5bs4DHwtes7BF+dkx5eN3fx/VUFRCmWTsE7g==
@@ -2742,9 +2742,9 @@ minimatch@^3.0.4:
     brace-expansion "^1.1.7"
 
 minimist@^1.1.1, minimist@^1.2.0, minimist@^1.2.5:
-  version "1.2.5"
-  resolved "https://registry.npmjs.org/minimist/-/minimist-1.2.5.tgz#67d66014b66a6a8aaa0c083c5fd58df4e4e97602"
-  integrity sha512-FM9nNUYrRBAELZQT3xeZQ7fmMOBg6nWNmJKTcgsJeaLstP/UODVpGsr5OhXhhXg6f+qtJ8uiZ+PUxkDWcgIXLw==
+  version "1.2.6"
+  resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.6.tgz#8637a5b759ea0d6e98702cfb3a9283323c93af44"
+  integrity sha512-Jsjnk4bw3YJqYzbdyBiNsPWHPfO++UGG749Cxs6peCu5Xg4nrena6OVxOYxrQTqww0Jmwt+Ref8rggumkTLz9Q==
 
 minipass@^2.6.0, minipass@^2.8.6, minipass@^2.9.0:
   version "2.9.0"
